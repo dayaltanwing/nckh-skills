@@ -1,0 +1,17 @@
+{
+  "name": "nckh-skills",
+  "description": "Bộ skill nghiên cứu khoa học xã hội cho Claude Code, bằng tiếng Việt.",
+  "owner": {
+    "name": "dayaltanwing",
+    "url": "https://github.com/dayaltanwing"
+  },
+  "plugins": [
+    {
+      "name": "nckh",
+      "source": "./",
+      "description": "12 skill cho cả vòng nghiên cứu: tìm và đọc tài liệu, tổng quan, thiết kế, thang đo, phân tích định lượng/định tính, viết LaTeX cho Prism, kiểm trích dẫn, tự phản biện, trả lời reviewer.",
+      "category": "productivity",
+      "homepage": "https://github.com/dayaltanwing/nckh-skills"
+    }
+  ]
+}
