@@ -53,7 +53,7 @@ def tom_tat(inv):
         return ""
     vi_tri = {}
     for tu, ds in inv.items():
-        for i in ds:
+        for i in ds or []:
             vi_tri[i] = tu
     return " ".join(vi_tri[i] for i in sorted(vi_tri))
 
@@ -86,7 +86,7 @@ def tim(args):
 
 
 def rut_gon(w):
-    tac_gia = [(a.get("author") or {}).get("display_name") for a in (w.get("authorships") or [])]
+    tac_gia = [((a or {}).get("author") or {}).get("display_name") for a in (w.get("authorships") or [])]
     tac_gia = [t for t in tac_gia if t]
     if len(tac_gia) > 3:
         ten = ", ".join(tac_gia[:3]) + " et al."

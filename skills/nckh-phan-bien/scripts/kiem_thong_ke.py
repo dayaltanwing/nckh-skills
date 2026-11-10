@@ -105,14 +105,29 @@ def gamma_tren(a, x):
     return min(1.0, max(0.0, truoc * h))
 
 
+# Trên ngưỡng này hàm beta mất chính xác (hai số rất lớn trừ nhau), còn phân phối giới hạn thì đúng
+# tới 7 chữ số: t thành chuẩn, F thành χ².
+DF_RAT_LON = 1e7
+
+
 def p_t(t, df):
     """p hai phía của t."""
     t = abs(t)
+    if df > DF_RAT_LON:
+        return p_z(t)
     return 1.0 if t == 0.0 else beta_chuan(df / 2.0, 0.5, df / (df + t * t))
 
 
 def p_f(f, df1, df2):
-    return 1.0 if f <= 0.0 else beta_chuan(df2 / 2.0, df1 / 2.0, df2 / (df2 + df1 * f))
+    if f <= 0.0:
+        return 1.0
+    if df1 > DF_RAT_LON and df2 > DF_RAT_LON:          # ln F xấp xỉ chuẩn với phương sai 2/df1 + 2/df2
+        return 0.5 * math.erfc(math.log(f) / math.sqrt(2.0 / df1 + 2.0 / df2) / math.sqrt(2.0))
+    if df2 > DF_RAT_LON:                                # df1·F xấp xỉ χ²(df1)
+        return p_chi2(df1 * f, df1)
+    if df1 > DF_RAT_LON:                                # df2/F xấp xỉ χ²(df2)
+        return 1.0 - p_chi2(df2 / f, df2)
+    return beta_chuan(df2 / 2.0, df1 / 2.0, df2 / (df2 + df1 * f))
 
 
 def p_chi2(x, df):
@@ -281,15 +296,16 @@ SO_P = r"(?:\d+[.,]\d+|[.,]\d+|\d+)(?:[eE]-?\d+|\s*[×x]\s*10\s*\^?\s*-?\d+)?"
 MAU_P = re.compile(
     r"(?<![\w\\^])(?:[pP](?:[- ]?values?)?|[Ss]ig\.?)\s*(?P<dau><=|>=|=<|=>|[<>=≤≥])\s*(?P<p>" + SO_P + r")(?![\d])")
 MAU_NS = re.compile(r"(?<![\w.])(?:ns|n\.\s?s\.?)(?!\w)")
-MAU_HET_CAU = re.compile(r"[.!?]\s+(?=(\S))|\n\s*\n")
+# Hết câu: dấu chấm rồi khoảng trắng (nhiều nhất một lần xuống dòng) rồi chữ hoa. Hết đoạn: một dòng trống.
+MAU_HET_CAU = re.compile(r"[.!?](?:[ \t]+|[ \t]*\n[ \t]*)(?=(\S))|\n[ \t]*\n")
 MAU_MOT_PHIA = re.compile(r"one[- ]tailed|one[- ]sided|1[- ]tailed|một (?:phía|đuôi)", re.I)
 TAM_NHIN = 100          # số ký tự sau thống kê để tìm p của nó
 TAM_NS = 30
 # Giữa thống kê và p của nó chỉ được có ký hiệu thống kê (95% CI […], MSE = …, d = …), không có văn xuôi.
 # "F(1, 196) = 0.85, but the slope was, b = 0.30, p = .004": p này là của b, không phải của F.
 MAU_TU = re.compile(r"[^\W\d_]{4,}")
-TU_DUOC_PHEP = {"cohen", "cohens", "hedges", "glass", "partial", "omega", "epsilon", "cramer", "cramér",
-                "tailed", "sided", "with", "value", "nghĩa", "phía", "đuôi"}
+TU_DUOC_PHEP = {"cohen", "cohens", "hedges", "glass", "partial", "squared", "omega", "epsilon", "cramer", "cramér",
+                "odds", "ratio", "tailed", "sided", "with", "value", "nghĩa", "phía", "đuôi"}
 
 
 def co_van_xuoi(doan):
@@ -326,7 +342,8 @@ def doc_p(chuoi):
     s = re.sub(r"\s+", "", chuoi).replace(",", ".")
     m = re.fullmatch(r"(\d*\.?\d+)(?:[eE]|[×x]10\^?)(-?\d+)", s)
     phan, mu = (m.group(1), int(m.group(2))) if m else (s, 0)
-    le = len(phan.split(".")[1]) if "." in phan else 0
+    mu = max(-400, min(mu, 300))                # 10.0 ** 999 ném OverflowError; p cỡ đó đằng nào cũng không hợp lệ
+    le = min(len(phan.split(".")[1]) if "." in phan else 0, 300)
     return float(phan) * 10.0 ** mu, 0.5 * 10.0 ** (mu - le)
 
 

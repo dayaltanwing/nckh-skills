@@ -78,6 +78,19 @@ class SoHoc(CoSo):
             with self.subTest(loai=loai, gt=gt, df1=df1, df2=df2):
                 self.assertAlmostEqual(self.k.tinh_p(loai, gt, df1, df2) / chuan, 1.0, delta=1e-7)
 
+    def test_bac_tu_do_rat_lon(self):
+        # p đúng lấy từ scipy. Trước khi có nhánh xấp xỉ, df = 1e15 cho sai số 40–60%.
+        chuan = [("t", 2.0, 1e9, None, 0.045500264166313246), ("t", 2.0, 1e15, None, 0.04550026389635871),
+                 ("t", 5.0, 1e12, None, 5.73303143855025e-07),
+                 ("F", 4.0, 1, 1e12, 0.04550026389662835), ("F", 2.6, 3, 1e12, 0.05033109786045144),
+                 ("F", 1.6, 20, 1e10, 0.04329831618054975), ("F", 0.4, 1e12, 5, 0.9714568766731589),
+                 ("F", 2.5, 1e12, 5, 0.15085496391552888), ("F", 1.0, 1e9, 1e9, 0.4999999999999981),
+                 ("F", 1.001, 1e9, 1e9, 1.4718529529567575e-56)]
+        for loai, gt, df1, df2, p in chuan:
+            with self.subTest(loai=loai, gt=gt, df1=df1, df2=df2):
+                self.assertAlmostEqual(self.k.tinh_p(loai, gt, df1, df2) / p, 1.0, delta=1e-5)
+        self.assertGreater(self.k.p_f(0.999, 1e9, 1e9), 0.999999)
+
     def test_gia_tri_bien(self):
         k = self.k
         self.assertEqual(k.p_t(0, 10), 1.0)
@@ -106,6 +119,8 @@ class CachViet(CoSo):
                    "t(48) = 2.31, 95% CI [0.12, 0.85], d = 0.65, p = .025",
                    "t(48) = 2.31, 95% CI [0.12, 0.85], Cohen's d = 0.65, Hedges' g = 0.64, BF10 = 2.4, p = .025",
                    "t(48) = 2.31, two-tailed p = .025",
+                   "t(48) = 2.31, partial eta squared = .10, odds ratio = 2.1, p = .025",
+                   "t(48) = 2.31,\n   p = .025",
                    "t(48) = 2.31 with p = .025",
                    "t(48) = 2,31 với mức ý nghĩa p = 0,025"):
             with self.subTest(vb=vb):
@@ -235,6 +250,15 @@ class KhongDocNham(CoSo):
     def test_p_cua_cau_sau_khong_thuoc_thong_ke_nay(self):
         self.assertTrangThai("We found t(48) = 0.52. The other effect was significant, p = .003.", "KHÔNG CÓ p")
         self.assertTrangThai("t(48) = 0.52.\n\nĐoạn mới có p = .003.", "KHÔNG CÓ p")
+        # Dòng trống là hết đoạn, kể cả khi đoạn sau bắt đầu bằng chữ thường.
+        for vb in ("t(48) = 0.52.\n\np = .003", "t(48) = 0.52\n\np = .003", "t(48) = 0.52.\n  \n(p = .003)"):
+            with self.subTest(vb=vb):
+                self.assertTrangThai(vb, "KHÔNG CÓ p")
+
+    def test_dau_cham_truoc_chu_thuong_khong_phai_het_cau(self):
+        # Dấu chấm của chữ viết tắt ("est.", "vs.") không kết thúc câu, nên p đứng sau vẫn thuộc thống kê này.
+        self.assertTrangThai("t(48) = 2.31 (est. 95% CI [0.1, 0.9]), p = .025", "OK")
+        self.assertTrangThai("t(48) = 2.31 vs. p = .025", "OK")
 
     def test_p_cua_thong_ke_dung_sau(self):
         kq = self.kiem("t(48) = 0.52 and F(1, 48) = 5.34, p = .025")
@@ -317,6 +341,15 @@ class SoP(CoSo):
     def test_f_va_chi_binh_phuong_khong_co_mot_phia(self):
         self.assertTrangThai("F(1, 48) = 3.24, p = .039", "LỆCH NẶNG")      # p = .078; chia đôi không áp dụng cho F
         self.assertTrangThai("F(1, 48) = 5.34, p = .025", "OK", mot_phia=True)
+
+    def test_so_qua_lon_khong_lam_hong(self):
+        self.assertTrangThai("t(48) = 2.31, p = 1e999", "KHÔNG HỢP LỆ")
+        self.assertTrangThai("t(48) = 2.31, p = 1e-999", "LỆCH")
+        self.assertTrangThai("t(48) = " + "9" * 400 + ", p < .001", "OK")
+        self.assertTrangThai("t(" + "9" * 30 + ") = 2.00, p = .046", "OK")
+        self.assertTrangThai("F(1, " + "9" * 30 + ") = 4.00, p = .046", "OK")
+        self.assertTrangThai("χ²(3) = " + "9" * 400 + ", p < .001", "OK")
+        self.assertTrangThai("t(48) = 2.31, p = 0." + "0" * 400 + "1", "LỆCH")
 
     def test_khong_hop_le(self):
         for vb in ("r(98) = 1.34, p < .001", "t(0) = 2.00, p = .05", "t(48) = 2.31, p = 1.5",

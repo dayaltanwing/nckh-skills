@@ -23,6 +23,8 @@ Script làm các việc sau:
 - Với mục không có DOI: tìm trên Crossref theo tiêu đề và tác giả, đề xuất DOI nếu tìm được bản khớp cao.
 - Với `--tex`: liệt kê khoá được `\cite` nhưng không có trong `.bib` (lỗi), và khoá có trong `.bib` nhưng không được trích (dọn dẹp). Đưa file `.tex` chính thì script tự đi theo `\input` và `\include`. Đưa một thư mục thì nó đọc mọi `.tex` trong đó, trừ `vong-*/` và `*-diff.tex` (bản vòng trước và bản latexdiff do `nckh-tra-loi-reviewer` tạo ra). Chưa có `main.tex` thì đưa file đang viết, ví dụ `nckh/ban-thao/tong-quan.tex`.
 
+Bản thảo biên dịch với `nckh/ban-thao/refs.bib`, là bản sao của `tai-lieu.bib`. Nếu hai file khác nhau thì script báo đủ khoá mà lúc biên dịch vẫn thiếu. Trước khi chạy, so hai file; khác nhau thì nói với người dùng và hỏi giữ bản nào, rồi mới kiểm.
+
 Kết quả là một bảng, mỗi mục một trạng thái:
 
 | Trạng thái | Nghĩa | Việc cần làm |

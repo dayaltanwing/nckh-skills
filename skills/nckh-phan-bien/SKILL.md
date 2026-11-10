@@ -74,7 +74,7 @@ Script tìm các thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p
 | `OK` | p trong bài khớp p tính lại. |
 | `LỆCH` | Không khớp, nhưng kết luận có/không có ý nghĩa ở α = .05 không đổi. |
 | `LỆCH NẶNG` | Không khớp, và kết luận đổi. Xếp vào mục Nghiêm trọng. |
-| `MỘT PHÍA?` | Chỉ khớp nếu là kiểm định một phía. Nếu đúng vậy thì bài phải nói rõ. Cả bài dùng một phía thì chạy lại với `--mot-phia`. |
+| `MỘT PHÍA?` | Chỉ khớp nếu là kiểm định một phía. Nếu đúng vậy thì bài phải nói rõ. Cả bài dùng một phía thì chạy lại với `--mot-phia`; khi đó dòng nào chỉ khớp theo hai phía sẽ mang nhãn `HAI PHÍA?`. |
 | `KHÔNG HỢP LỆ` | Giá trị không thể có: \|r\| > 1, bậc tự do ≤ 0, p > 1. |
 | `KHÔNG CÓ p` | Bài không ghi p ngay sau thống kê này. Không phải lỗi. |
 

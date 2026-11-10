@@ -130,6 +130,12 @@ class TacGiaDau(CoSo):
                                       {"family": "Braun", "given": "V", "sequence": "first"}]}
         self.assertTrangThai(self.kiem(muc_bib(author="Braun, Virginia"), cr), "OK")
 
+    def test_ten_khac_he_chu_thi_khong_so(self):
+        # .bib ghi tên bằng chữ gốc, Crossref ghi bản Latin hoá (hoặc ngược lại): không so được, không báo oan.
+        self.assertTrangThai(self.kiem(muc_bib(author="王伟"), ban_ghi("Wang", "Wei")), "OK")
+        self.assertTrangThai(self.kiem(muc_bib(author="Иванов, Иван"), ban_ghi("Ivanov", "Ivan")), "OK")
+        self.assertTrangThai(self.kiem(muc_bib(author="Wang, Wei"), ban_ghi("王", "伟")), "OK")
+
     def test_khong_co_tac_gia_thi_bo_qua(self):
         self.assertTrangThai(self.kiem(muc_bib(author=None), ban_ghi()), "OK")
         self.assertTrangThai(self.kiem(muc_bib(), {**ban_ghi(), "author": []}), "OK")
@@ -202,6 +208,13 @@ class TieuDe(CoSo):
     def test_the_html_trong_tieu_de_crossref(self):
         cr = ban_ghi(title="Career adaptability of <i>Vietnamese</i> high school students &amp; teachers")
         self.assertTrangThai(self.kiem(muc_bib(title="Career adaptability of Vietnamese high school students & teachers"), cr), "OK")
+
+    def test_tieu_de_khong_phai_chu_latin(self):
+        # Trước đây mọi chữ ngoài a–z bị xoá, nên hai tiêu đề tiếng Trung khác hẳn nhau vẫn "giống 100%".
+        self.assertTrangThai(self.kiem(muc_bib(title="职业适应力对高中生的影响研究"), ban_ghi(title="城市交通拥堵的经济学分析与对策")), "LỆCH")
+        self.assertTrangThai(self.kiem(muc_bib(title="职业适应力对高中生的影响研究"), ban_ghi(title="职业适应力对高中生的影响研究")), "OK")
+        self.assertTrangThai(self.kiem(muc_bib(title="Влияние карьерной адаптивности на школьников"),
+                                       ban_ghi(title="Экономический анализ городских транспортных заторов")), "LỆCH")
 
     def test_crossref_khong_co_tieu_de(self):
         kq = self.kiem(muc_bib(), ban_ghi(title=None))
@@ -462,6 +475,17 @@ class NhanLoi(unittest.TestCase):
         with redirect_stdout(io.StringIO()):
             kq = k.kiem_tat_ca([{"khoa": f"k{i}", "loai": "article"} for i in range(10)])
         self.assertEqual([x["trang_thai"] for x in kq], ["OK", "LỖI MẠNG"] * 5)
+
+    def test_ghi_chu_co_gach_dung_khong_lam_vo_bang(self):
+        k = _nap.nap("kiem_trich_dan")
+        k.kiem_muc = lambda m: {"khoa": "a", "loai": "article", "doi": "10.1/x", "trang_thai": "LỆCH",
+                                "ghi_chu": 'tiêu đề chỉ giống 10%; Crossref: "A | B\nC"'}
+        k.time.sleep = lambda s: None
+        out = io.StringIO()
+        with redirect_stdout(out):
+            k.kiem_tat_ca([{"khoa": "a", "loai": "article"}])
+        dong = [d for d in out.getvalue().splitlines() if d.startswith("| a |")]
+        self.assertEqual(dong, ['| a | LỆCH | 10.1/x | tiêu đề chỉ giống 10%; Crossref: "A \\| B C" |'])
 
     def test_loi_trong_script_khong_goi_la_loi_mang(self):
         ma, out = self.chay_main(ValueError("invalid literal for int()"))

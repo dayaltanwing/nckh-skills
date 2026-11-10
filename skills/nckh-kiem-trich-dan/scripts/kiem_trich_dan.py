@@ -141,10 +141,14 @@ def bo_latex(s):
 
 
 def chuan_hoa(s):
-    """Chuỗi -> danh sách từ viết thường, không dấu, không ký hiệu."""
+    """Chuỗi -> danh sách từ viết thường, không dấu, không ký hiệu.
+
+    Giữ chữ của mọi hệ chữ viết. Nếu chỉ giữ a–z thì hai tiêu đề tiếng Trung hay tiếng Nga khác hẳn nhau
+    đều thành chuỗi rỗng và bị coi là giống nhau hoàn toàn.
+    """
     s = unicodedata.normalize("NFKD", bo_latex(s).translate(CHU_RIENG))
     s = "".join(c for c in s if not unicodedata.combining(c))
-    return re.sub(r"[^a-z0-9 ]", " ", s.lower()).split()
+    return re.sub(r"[\W_]", " ", s.lower()).split()
 
 
 def bo_the(s):
@@ -217,8 +221,11 @@ def khop_tac_gia(ho_bib, ca_bib, ho_cr, ca_cr):
     Tên Việt được ghi theo nhiều thứ tự (Nguyễn Văn An; An, Nguyễn Văn; Nguyen, V. A.) và mỗi tạp chí
     đăng ký với Crossref một kiểu, có tạp chí lấy tên gọi làm họ. Vì thế không so "họ với họ" mà coi là
     khớp khi phần họ của bên này nằm trong tên đầy đủ của bên kia. Thiếu dữ liệu ở một bên thì bỏ qua.
+    Tên không viết bằng chữ Latin cũng bỏ qua: một bên ghi 王伟, bên kia ghi Wang Wei thì không so được.
     """
     if not ho_bib or not ho_cr:
+        return True
+    if not all(t.isascii() for t in ho_bib + ho_cr):
         return True
     return set(ho_cr) <= set(ca_bib) or set(ho_bib) <= set(ca_cr)
 
@@ -494,6 +501,11 @@ def doi_chieu(muc, khoa):
 
 # ---------- chương trình chính ----------
 
+def o_bang(gia_tri):
+    """Một ô của bảng Markdown: dấu | hoặc xuống dòng trong tiêu đề Crossref sẽ làm vỡ bảng."""
+    return " ".join(str(gia_tri).split()).replace("|", "\\|")
+
+
 def kiem_tat_ca(muc):
     """Kiểm từng mục với Crossref, in dần ra bảng. Trả về danh sách kết quả."""
     ket_qua, lien_tiep = [], 0
@@ -518,7 +530,7 @@ def kiem_tat_ca(muc):
                   "ghi_chu": f"{type(e).__name__}: {e} (lỗi của script với mục này, không phải lỗi mạng; kiểm tay mục này)"}
             lien_tiep = 0
         ket_qua.append(kq)
-        print(f"| {kq['khoa']} | {kq['trang_thai']} | {kq['doi']} | {kq['ghi_chu']} |")
+        print(f"| {o_bang(kq['khoa'])} | {kq['trang_thai']} | {o_bang(kq['doi'])} | {o_bang(kq['ghi_chu'])} |")
         time.sleep(0.15)
     return ket_qua
 
@@ -554,6 +566,8 @@ def main():
             sys.exit(2)
 
     print(f"# {len(muc)} mục trong {a.bib}\n")
+    if not muc:
+        print("Không tìm thấy mục BibTeX nào: file rỗng, hoặc không phải file BibTeX.\n")
 
     trung = khoa_trung(muc)
     if trung:
