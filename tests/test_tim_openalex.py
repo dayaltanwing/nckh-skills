@@ -81,7 +81,8 @@ class TimKiem(CoSo):
         self.chay("career", "--tu-nam", "2015", "--den-nam", "2020", "--loai", "review", "--sap-xep", "trich-dan", "--so-luong", "40")
         q = urllib.parse.parse_qs(urllib.parse.urlparse(self.url[0]).query)
         self.assertEqual(q["search"], ["career"])
-        self.assertEqual(q["per-page"], ["40"])
+        self.assertEqual(q["per_page"], ["40"])       # OpenAlex dùng snake_case cho mọi tham số
+        self.assertNotIn("page", q)                   # trang đầu không cần ghi số trang
         self.assertEqual(q["sort"], ["cited_by_count:desc"])
         self.assertEqual(q["filter"], ["from_publication_date:2015-01-01,to_publication_date:2020-12-31,type:review"])
 
@@ -96,14 +97,54 @@ class TimKiem(CoSo):
         ma, out, err = self.chay()
         self.assertEqual(ma, 2)
 
-    def test_qua_200_thi_noi_ro(self):
-        self.tra_ve([bai(i) for i in range(1, 4)], tong=900)
-        ma, out, err = self.chay("career", "--so-luong", "300")
-        q = urllib.parse.parse_qs(urllib.parse.urlparse(self.url[0]).query)
-        self.assertEqual(q["per-page"], ["200"])
-        self.assertIn("chỉ lấy được 200 bài", out)
-        ma, out, err = self.chay("career", "--so-luong", "200")
-        self.assertNotIn("chỉ lấy được", out)
+    def tra_ve_theo_trang(self, tong):
+        """OpenAlex giả có `tong` bài, trả theo trang như API thật (per_page tối đa 100)."""
+        def lay(url):
+            self.url.append(url)
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+            moi_trang, trang = int(q["per_page"][0]), int(q.get("page", ["1"])[0])
+            assert moi_trang <= 100, "OpenAlex từ chối per_page > 100"
+            dau = (trang - 1) * moi_trang
+            return {"meta": {"count": tong}, "results": [bai(i + 1) for i in range(dau, min(dau + moi_trang, tong))]}
+        self.o.lay_json = lay
+
+    def trang_da_goi(self):
+        return [urllib.parse.parse_qs(urllib.parse.urlparse(u).query).get("page", ["1"])[0] for u in self.url]
+
+    def test_tren_100_bai_thi_lat_trang(self):
+        self.tra_ve_theo_trang(tong=900)
+        ma, out, err = self.chay("career", "--so-luong", "250")
+        self.assertEqual((ma, err), (0, ""))
+        self.assertEqual(self.trang_da_goi(), ["1", "2", "3"])
+        self.assertIn("# OpenAlex: 900 kết quả khớp, hiển thị 250", out)
+        dong = [d for d in out.splitlines() if d.startswith("| ") and d[2].isdigit()]
+        self.assertEqual(len(dong), 250)
+        self.assertIn("Bài số 250 |", dong[-1])                       # đúng thứ tự, không lặp, không sót
+        self.assertEqual(len({d.split("|")[4] for d in dong}), 250)
+
+    def test_het_ket_qua_thi_dung(self):
+        self.tra_ve_theo_trang(tong=120)
+        ma, out, err = self.chay("career", "--so-luong", "500")
+        self.assertEqual(self.trang_da_goi(), ["1", "2"])
+        self.assertIn("hiển thị 120", out)
+        self.url.clear()
+        self.tra_ve_theo_trang(tong=100)
+        self.chay("career", "--so-luong", "100")
+        self.assertEqual(self.trang_da_goi(), ["1"])
+
+    def test_gioi_han_10000(self):
+        self.tra_ve_theo_trang(tong=50)
+        ma, out, err = self.chay("career", "--so-luong", "20000")
+        self.assertIn("10000", out)
+        self.assertIn("--tu-nam", out)
+
+    def test_url_ghi_log_khong_co_so_trang_va_khoa(self):
+        self.tra_ve_theo_trang(tong=300)
+        ma, out, err = self.chay("career", "--so-luong", "300", env={"OPENALEX_API_KEY": "bi-mat-123"})
+        self.assertTrue(all("api_key=bi-mat-123" in u for u in self.url))
+        self.assertNotIn("bi-mat-123", out + err)
+        truy_van = [d for d in out.splitlines() if d.startswith("# Truy vấn:")][0]
+        self.assertNotIn("page=", truy_van.replace("per_page=", ""))
 
     def test_so_luong_khong_hop_le(self):
         self.assertEqual(self.chay("career", "--so-luong", "0")[0], 2)
@@ -159,18 +200,36 @@ class LoiMang(CoSo):
         self.o.lay_json = lay
         return self.chay("career", **kw)
 
-    def test_bi_tu_choi_thi_noi_cach_dat_khoa(self):
+    def http(self, ma_http, than=b"", ly_do="Forbidden"):
+        return urllib.error.HTTPError("https://api.openalex.org/works?api_key=bi-mat", ma_http, ly_do, {}, io.BytesIO(than))
+
+    def test_khoa_bi_tu_choi(self):
         for ma_http in (401, 403):
-            ma, out, err = self.loi(urllib.error.HTTPError("https://api.openalex.org/works?api_key=bi-mat", ma_http, "Forbidden", {}, None),
-                                    env={"OPENALEX_API_KEY": "bi-mat"})
-            self.assertEqual(ma.count("OPENALEX_API_KEY"), 1)
+            than = json.dumps({"error": "key_not_activated", "message": "Key bi-mat is not activated yet | click\nthe link"}).encode()
+            ma, out, err = self.loi(self.http(ma_http, than), env={"OPENALEX_API_KEY": "bi-mat"})
             self.assertIn(f"HTTP {ma_http}", ma)
-            self.assertNotIn("bi-mat", ma + out + err)
+            self.assertIn("OPENALEX_API_KEY", ma)
+            self.assertIn("openalex.org/settings/api", ma)
+            self.assertIn("is not activated yet", ma)                 # lời của máy chủ được đưa ra
+            self.assertNotIn("bi-mat", ma + out + err)                # nhưng khoá thì không
             self.assertNotIn("Lỗi mạng", ma)
 
-    def test_goi_qua_nhieu(self):
-        ma, out, err = self.loi(urllib.error.HTTPError("u", 429, "Too Many Requests", {}, None))
-        self.assertIn("quá nhiều", ma)
+    def test_bi_tu_choi_khi_khong_dung_khoa(self):
+        ma, out, err = self.loi(self.http(403, b"<html>blocked</html>"))
+        self.assertIn("HTTP 403", ma)
+        self.assertIn("openalex.org/settings/api", ma)
+
+    def test_het_han_muc(self):
+        ma, out, err = self.loi(self.http(429, b'{"message": "Daily budget exceeded"}', "Too Many Requests"))
+        self.assertIn("hạn mức", ma)
+        self.assertIn("openalex.org/settings/api", ma)
+        self.assertIn("Daily budget exceeded", ma)
+
+    def test_loi_http_khac(self):
+        ma, out, err = self.loi(self.http(400, b'{"message": "Invalid query parameter"}', "Bad Request"))
+        self.assertIn("HTTP 400", ma)
+        self.assertIn("Invalid query parameter", ma)
+        self.assertNotIn("OPENALEX_API_KEY", ma)
 
     def test_dut_ket_noi_giua_chung_la_loi_mang_chu_khong_phai_loi_ghi_file(self):
         import socket

@@ -11,7 +11,8 @@ Ví dụ:
 --bib ghi THÊM vào file, không ghi đè: bài đã có trong file (trùng DOI) được bỏ qua, và mục mới nào
 trùng khoá với mục đã có thì được đổi khoá (thêm a, b, c…).
 
-Nếu OpenAlex đòi khoá API, đặt khoá vào biến môi trường OPENALEX_API_KEY rồi chạy lại.
+Không cần khoá API. Nhưng không có khoá thì hạn mức mỗi ngày của OpenAlex chỉ bằng một phần mười.
+Khoá miễn phí lấy tại openalex.org/settings/api; đặt vào biến môi trường OPENALEX_API_KEY.
 Script không bao giờ in khoá ra.
 """
 import argparse
@@ -27,7 +28,8 @@ import urllib.request
 
 API = "https://api.openalex.org/works"
 UA = "nckh-skills/1.1 (literature search script)"
-TOI_DA_MOT_LAN = 200          # OpenAlex trả tối đa 200 bài cho một lần gọi
+MOI_TRANG = 100               # OpenAlex trả tối đa 100 bài mỗi trang (per_page)
+TOI_DA = 10000                # và chỉ cho lật trang tới bài thứ 10.000
 
 
 def lay_json(url):
@@ -60,7 +62,7 @@ def tom_tat(inv):
 
 
 def tim(args):
-    """Gọi OpenAlex. Trả về (tổng số bài khớp, các bài, URL truy vấn để ghi log)."""
+    """Gọi OpenAlex, lật trang cho đủ số bài. Trả về (tổng số bài khớp, các bài, URL truy vấn để ghi log)."""
     loc = []
     if args.tu_nam:
         loc.append(f"from_publication_date:{args.tu_nam}-01-01")
@@ -70,7 +72,9 @@ def tim(args):
         loc.append(f"type:{args.loai}")
     if args.trich_dan_boi:
         loc.append(f"cites:{args.trich_dan_boi}")
-    tham_so = {"per-page": max(1, min(args.so_luong, TOI_DA_MOT_LAN))}
+    can = min(args.so_luong, TOI_DA)
+    moi_trang = min(can, MOI_TRANG)         # giữ nguyên qua các trang, nếu đổi thì trang sau sẽ lệch
+    tham_so = {"per_page": moi_trang}
     if args.tu_khoa:
         tham_so["search"] = args.tu_khoa
     if loc:
@@ -82,8 +86,18 @@ def tim(args):
     url = API + "?" + urllib.parse.urlencode(tham_so)
     # Khoá API chỉ đi kèm yêu cầu gửi đi; URL trả về để ghi log thì không có khoá.
     khoa = os.environ.get("OPENALEX_API_KEY", "").strip()
-    du_lieu = lay_json(url + ("&" + urllib.parse.urlencode({"api_key": khoa}) if khoa else "")) or {}
-    return (du_lieu.get("meta") or {}).get("count", 0), (du_lieu.get("results") or [])[: args.so_luong], url
+    duoi_khoa = "&" + urllib.parse.urlencode({"api_key": khoa}) if khoa else ""
+    tong, bai, trang = 0, [], 1
+    while len(bai) < can:
+        du_lieu = lay_json(url + (f"&page={trang}" if trang > 1 else "") + duoi_khoa) or {}
+        tong = (du_lieu.get("meta") or {}).get("count") or 0
+        ket_qua = du_lieu.get("results") or []
+        bai += ket_qua
+        if len(ket_qua) < moi_trang or len(bai) >= tong:
+            break
+        trang += 1
+        time.sleep(0.15)
+    return tong, bai[:can], url
 
 
 def rut_gon(w):
@@ -215,7 +229,7 @@ def main():
     p.add_argument("--tu-nam", type=int)
     p.add_argument("--den-nam", type=int)
     p.add_argument("--loai", help="article, review, book-chapter, dissertation…")
-    p.add_argument("--so-luong", type=int, default=25, help=f"số bài muốn lấy (tối đa {TOI_DA_MOT_LAN} mỗi lần chạy)")
+    p.add_argument("--so-luong", type=int, default=25, help=f"số bài muốn lấy; trên {MOI_TRANG} bài thì script tự lật trang (tối đa {TOI_DA})")
     p.add_argument("--sap-xep", choices=["lien-quan", "trich-dan", "moi-nhat"], default="lien-quan")
     p.add_argument("--trich-dan-boi", metavar="OPENALEX_ID", help="liệt kê các bài trích dẫn bài này (snowballing tiến)")
     p.add_argument("--bib", metavar="FILE", help="ghi thêm BibTeX của các bài có DOI vào file này (không ghi đè)")
@@ -232,8 +246,8 @@ def main():
     print(f"# OpenAlex: {tong} kết quả khớp, hiển thị {len(bai)}")
     print(f"# Truy vấn: {url}")
     print(f"# Ngày tìm: {time.strftime('%Y-%m-%d')}  (ghi dòng này vào tim-kiem.md)")
-    if a.so_luong > TOI_DA_MOT_LAN:
-        print(f"# Lưu ý: mỗi lần chạy chỉ lấy được {TOI_DA_MOT_LAN} bài, không phải {a.so_luong}. "
+    if a.so_luong > TOI_DA:
+        print(f"# Lưu ý: OpenAlex chỉ cho lật trang tới bài thứ {TOI_DA}, không tới {a.so_luong}. "
               "Muốn lấy hết thì chia theo khoảng năm (--tu-nam, --den-nam) và chạy nhiều lần.")
     print()
     print("| # | Tác giả | Năm | Tiêu đề | Nguồn | Trích dẫn | DOI | Truy cập mở |")
@@ -272,18 +286,38 @@ def khong_ghi_duoc(duong, loi):
     sys.exit(2)
 
 
+def loi_may_chu(e, khoa):
+    """Lời giải thích trong câu trả lời lỗi của OpenAlex (khoá API đã được che), hoặc chuỗi rỗng."""
+    try:
+        du_lieu = json.loads(e.read().decode("utf-8", errors="replace"))
+        noi = " ".join(str(du_lieu[k]) for k in ("error", "code", "message") if du_lieu.get(k))
+    except Exception:  # noqa: BLE001  (không có thân, hoặc thân là trang HTML của proxy: không có gì để in)
+        return ""
+    if khoa:
+        noi = noi.replace(khoa, "***")
+    return " ".join(noi.split())[:300]
+
+
 def chay():
     in_utf8()
     try:
         main()
     except urllib.error.HTTPError as e:
+        khoa = os.environ.get("OPENALEX_API_KEY", "").strip()
+        noi = loi_may_chu(e, khoa)
+        noi = f" OpenAlex nói: {noi}." if noi else ""
         goi_y = ""
-        if e.code in (401, 403):
-            goi_y = (" Nếu OpenAlex đòi khoá API: lấy khoá trong tài khoản của bạn trên openalex.org, "
-                     "đặt vào biến môi trường OPENALEX_API_KEY rồi chạy lại.")
+        if e.code in (401, 403) and khoa:
+            goi_y = (" Khoá trong OPENALEX_API_KEY không được chấp nhận. Xem lại khoá tại openalex.org/settings/api; "
+                     "khoá xin qua email thì phải bấm đường link kích hoạt trong email trước.")
+        elif e.code in (401, 403):
+            goi_y = (" Thử lại sau ít phút. Nếu vẫn bị từ chối, lấy khoá API miễn phí tại openalex.org/settings/api "
+                     "và đặt vào biến môi trường OPENALEX_API_KEY.")
         elif e.code == 429:
-            goi_y = " OpenAlex báo đã gọi quá nhiều; chờ rồi chạy lại, hoặc dùng khoá API (biến OPENALEX_API_KEY)."
-        sys.exit(f"OpenAlex từ chối yêu cầu: HTTP {e.code} {e.reason}.{goi_y}")
+            goi_y = (" Đã vượt hạn mức của OpenAlex (hạn mức ngày, hoặc gọi quá nhanh). Không có khoá API thì hạn mức "
+                     "ngày chỉ bằng một phần mười. Lấy khoá miễn phí tại openalex.org/settings/api, đặt vào biến môi "
+                     "trường OPENALEX_API_KEY rồi chạy lại; hoặc chờ sang ngày mai.")
+        sys.exit(f"OpenAlex từ chối yêu cầu: HTTP {e.code} {e.reason}.{noi}{goi_y}")
     except urllib.error.URLError as e:
         sys.exit(f"Lỗi mạng khi gọi OpenAlex: {e.reason}")
     except json.JSONDecodeError:

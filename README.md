@@ -124,6 +124,7 @@ de-tai-cua-ban/
 
 - Claude không thay thế người dịch, hội đồng chuyên gia, hay người nghiên cứu khi diễn giải. Các bước ⛔ trong skill là chỗ bạn quyết định.
 - Script tìm và kiểm dựa vào OpenAlex/Crossref. Sách, luận văn, tạp chí Việt Nam không có DOI cần kiểm tay.
+- OpenAlex giới hạn số lượt tìm mỗi ngày. Dùng thường xuyên thì lấy khoá API miễn phí tại openalex.org/settings/api (hạn mức gấp 10) và đặt vào biến môi trường `OPENALEX_API_KEY`.
 - Script tính lại p chỉ đọc thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p = .025`). Số trong bảng vẫn phải đối chiếu với file kết quả.
 - Dữ liệu người tham gia: ẩn danh hoá trước khi cho Claude đọc (nguyên tắc 6).
 - Kiểm tra quy định của tạp chí và trường về việc dùng AI, và khai báo theo yêu cầu.

@@ -34,8 +34,9 @@ Phần đầu của đường dẫn script là thư mục chứa file SKILL.md n
 Script in bảng (tác giả, năm, tiêu đề, tạp chí, số trích dẫn, DOI, link truy cập mở) và tuỳ chọn xuất BibTeX lấy từ doi.org. Chạy `--help` để xem đủ tuỳ chọn (lọc theo loại bài, sắp xếp theo trích dẫn).
 
 - `--bib` ghi thêm vào file chứ không ghi đè: bài đã có trong file (trùng DOI) được bỏ qua, khoá trùng được đổi tên. Vì thế nhiều lần tìm dồn được vào cùng một `ung-vien.bib`.
-- Mỗi lần chạy lấy tối đa 200 bài. Cần nhiều hơn thì chia theo khoảng năm (`--tu-nam`, `--den-nam`), chạy nhiều lần, và ghi log từng lần.
-- Script báo "OpenAlex từ chối yêu cầu": làm theo gợi ý nó in ra. Nếu cần khoá API thì người dùng tự đặt khoá vào biến môi trường `OPENALEX_API_KEY` trên máy họ. Không bảo họ dán khoá vào khung chat.
+- `--so-luong` trên 100 thì script tự lật trang, vì OpenAlex trả 100 bài mỗi trang và chỉ cho lật tới bài thứ 10.000. Cần nhiều hơn nữa thì chia theo khoảng năm (`--tu-nam`, `--den-nam`), chạy nhiều lần, và ghi log từng lần.
+- Không cần khoá API. Nhưng OpenAlex tính hạn mức theo ngày: không có khoá thì được khoảng 100 lượt tìm, có khoá miễn phí thì khoảng 1.000 (mỗi trang 100 bài là một lượt; số liệu theo bảng giá của OpenAlex tháng 11/2026). Khoá lấy tại openalex.org/settings/api. Người dùng tự đặt khoá vào biến môi trường `OPENALEX_API_KEY` trên máy họ; không bảo họ dán khoá vào khung chat.
+- Script báo "OpenAlex từ chối yêu cầu": làm theo gợi ý nó in ra.
 - Script báo lỗi mạng: nói thẳng với người dùng là lần tìm này chưa chạy được. Không thay bằng danh sách bài từ trí nhớ.
 
 **Nguồn người dùng tự tìm** (cần đăng nhập hoặc chặn bot). Đưa họ chuỗi tìm đã chuyển sang cú pháp từng nơi:
