@@ -388,6 +388,12 @@ class DongLenh(unittest.TestCase):
         self.assertEqual(kq["thieu_trong_bib"], {"thieu": ["main.tex:2"]})
         self.assertEqual(kq["khong_duoc_trich"], [])
 
+    def test_dong_trong_tach_lenh_khoi_ngoac_phia_sau(self):
+        # Giữa lệnh và đối số của nó không thể có dòng trống, nên {nhóm} ở đoạn sau không phải danh sách khoá.
+        tex = _nap.ghi(self.d, "bt/main.tex", "\\let\\trichcu\\cite\n\n{nhom van ban}\n\\cite{a2020}\\cite{b2020}\\cite{c2020}\n")
+        ma, out, kq = self.chay(tex)
+        self.assertEqual((ma, kq["thieu_trong_bib"]), (0, {}))
+
     def test_file_chinh_di_theo_input(self):
         tex = _nap.ghi(self.d, "bt/main.tex", "\\input{sections/01-intro}\n\\include{sections/02-method.tex}\n% \\input{sections/bo}\n")
         _nap.ghi(self.d, "bt/sections/01-intro.tex", "Mở đầu\n\\parencite{a2020}\n\\input{sections/con}\n")

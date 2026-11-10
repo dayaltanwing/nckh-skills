@@ -465,8 +465,9 @@ def doc_ban_thao(duong_dan):
 
 
 MAU_LENH_CITE = re.compile(r"\\([a-zA-Z]*[cC]ite[a-zA-Z]*)\*?")
-MAU_KHOA = re.compile(r"\s*(?:\[[^\]]*\]\s*){0,2}\{([^{}]*)\}")
-MAU_KHOA_DA = re.compile(r"\s*(?:\([^()]*\)){0,2}(?:\[[^\]]*\]){0,2}\{([^{}]*)\}")   # \parencites(…)(…)[…][…]{…}
+CACH = r"[ \t]*\n?[ \t]*"       # khoảng trắng giữa lệnh và đối số: được xuống dòng một lần, không được có dòng trống
+MAU_KHOA = re.compile(CACH + r"(?:\[[^\]]*\]" + CACH + r"){0,2}\{([^{}]*)\}")
+MAU_KHOA_DA = re.compile(CACH + r"(?:\([^()]*\)){0,2}(?:\[[^\]]*\]){0,2}\{([^{}]*)\}")   # \parencites(…)(…)[…][…]{…}
 MAU_KHOA_TIEP = re.compile(r"(?:\[[^\]]*\]){0,2}\{([^{}]*)\}")
 # Lệnh có chữ "cite" trong tên nhưng dùng để cấu hình hoặc định nghĩa, không trích tài liệu nào.
 TIEN_TO_KHONG_TRICH = ("Declare", "AtEvery", "AtNext", "new", "renew", "provide", "set")
