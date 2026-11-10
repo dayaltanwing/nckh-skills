@@ -591,6 +591,9 @@ def main():
         print(f"- Khoá trùng: {len(trung)}")
     if a.tex:
         print(f"- Thiếu trong .bib: {len(thieu)}")
+    chua_kiem = dem.get("LỖI MẠNG", 0) + dem.get("CHƯA KIỂM", 0)
+    if chua_kiem:
+        print(f"\n{chua_kiem} mục CHƯA ĐƯỢC KIỂM với Crossref vì lỗi mạng. Không coi các mục đó là đạt; chạy lại khi có mạng.")
 
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:

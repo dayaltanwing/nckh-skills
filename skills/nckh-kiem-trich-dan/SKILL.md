@@ -5,22 +5,38 @@ description: Kiểm tra trích dẫn và tài liệu tham khảo trước khi n�
 
 # Kiểm tra trích dẫn
 
-Đây là "hàng rào bảo vệ" của bộ skill, giống guard hook trong super-board: nó chặn lỗi nặng nhất trong nghiên cứu có dùng AI, là **trích dẫn bịa hoặc sai** (nguyên tắc 1). Chạy nó sau mỗi lần viết và trước mỗi lần nộp.
+Đọc `../nckh/references/nguyen-tac.md` trước. Đây là "hàng rào bảo vệ" của bộ skill, giống guard hook trong super-board: nó chặn lỗi nặng nhất trong nghiên cứu có dùng AI, là **trích dẫn bịa hoặc sai** (nguyên tắc 1). Chạy nó sau mỗi lần viết và trước mỗi lần nộp.
 
 ## Tầng 1: tài liệu có thật và đúng không (script)
 
+Chạy từ thư mục gốc của đề tài (nơi có thư mục `nckh/`). Script nằm trong thư mục của skill này chứ không nằm trong đề tài, nên phải ghi đủ đường dẫn tới nó:
+
 ```bash
-python3 scripts/kiem_trich_dan.py nckh/tai-lieu/tai-lieu.bib --tex nckh/ban-thao
+python3 "${CLAUDE_SKILL_DIR}/scripts/kiem_trich_dan.py" nckh/tai-lieu/tai-lieu.bib --tex nckh/ban-thao/main.tex
 ```
 
+Phần đầu của đường dẫn script là thư mục chứa file SKILL.md này. Nếu trong lệnh trên vẫn còn một biến chưa được thay bằng đường dẫn thật, hãy tự thay (cài theo dự án thì là `.claude/skills/nckh-kiem-trich-dan`).
+
 Script làm các việc sau:
+- Báo khoá bị trùng trong `.bib`. Hai mục cùng khoá thì `\cite` có thể trỏ nhầm bài.
 - Với mục có DOI: hỏi Crossref; so tiêu đề (độ giống), năm, tác giả đầu; kiểm tra có thông báo rút bài/đính chính không.
 - Với mục không có DOI: tìm trên Crossref theo tiêu đề và tác giả, đề xuất DOI nếu tìm được bản khớp cao.
-- Với `--tex`: liệt kê khoá được `\cite` nhưng không có trong `.bib` (lỗi), và khoá có trong `.bib` nhưng không được trích (dọn dẹp).
+- Với `--tex`: liệt kê khoá được `\cite` nhưng không có trong `.bib` (lỗi), và khoá có trong `.bib` nhưng không được trích (dọn dẹp). Đưa file `.tex` chính thì script tự đi theo `\input` và `\include`. Đưa một thư mục thì nó đọc mọi `.tex` trong đó, trừ `vong-*/` và `*-diff.tex` (bản vòng trước và bản latexdiff do `nckh-tra-loi-reviewer` tạo ra). Chưa có `main.tex` thì đưa file đang viết, ví dụ `nckh/ban-thao/tong-quan.tex`.
 
-Kết quả là một bảng trạng thái: `OK`, `LỆCH` (DOI có thật nhưng tiêu đề/năm không khớp, rất có thể là nhầm hoặc bịa), `KHÔNG THẤY` (DOI không tồn tại), `KHÔNG DOI`, `BỊ RÚT/ĐÍNH CHÍNH`. Script thoát với mã 1 nếu có lỗi.
+Kết quả là một bảng, mỗi mục một trạng thái:
 
-Chạy `--help` để xem thêm. `--json` ghi kết quả ra file.
+| Trạng thái | Nghĩa | Việc cần làm |
+|---|---|---|
+| `OK` | Khớp Crossref | Vẫn đọc cột Ghi chú: có thể có lưu ý (một bên thiếu phụ đề, năm để trống). |
+| `LỆCH` | DOI có thật nhưng tiêu đề, năm hoặc tác giả đầu không khớp | Rất có thể là nhầm hoặc bịa. So hai bên trong cột Ghi chú, rồi mở trang doi.org của DOI đó để xác nhận. |
+| `KHÔNG THẤY` | Crossref không có DOI này | Kiểm tay tại doi.org. DOI của bộ dữ liệu, bản thảo trước xuất bản, luận văn thường do DataCite cấp chứ không phải Crossref. |
+| `KHÔNG DOI` | Mục không ghi DOI | Xem DOI script gợi ý. Không có gợi ý thì kiểm theo đoạn "Lưu ý" bên dưới. |
+| `BỊ RÚT`, `ĐÍNH CHÍNH` | Bài đã bị rút, hoặc có đính chính | Báo người dùng ngay. |
+| `THIẾU THÔNG TIN` | Không có cả DOI lẫn tiêu đề | Bổ sung mục trong `.bib`. |
+| `LỖI MẠNG`, `CHƯA KIỂM` | Script không tới được Crossref | Các mục này **chưa được kiểm**. Nói rõ với người dùng và chạy lại khi có mạng. Không coi là đạt. |
+| `LỖI SCRIPT` | Script gặp mục nó không xử lý được | Kiểm tay mục đó. |
+
+Script thoát với mã 1 khi còn mục cần xem lại. `--json` ghi kết quả ra file. `--chi-tex` bỏ qua Crossref, chỉ đối chiếu `\cite` với `.bib`. Chạy `--help` để xem thêm.
 
 Lưu ý: sách, chương sách, luận văn, tài liệu tiếng Việt thường không có DOI trên Crossref. Với các mục đó, Claude kiểm tra bằng cách tìm ISBN, trang nhà xuất bản, hoặc kho luận văn. Không kiểm được thì báo người dùng tự xác nhận (họ có sách trong tay không?).
 

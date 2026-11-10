@@ -1,6 +1,6 @@
 ---
 name: nckh-phan-bien
-description: Tự phản biện nghiêm khắc trước khi nộp. Đóng vai biên tập viên và ba reviewer (phương pháp, lý thuyết, "Reviewer 2" khó tính) để tấn công đề cương, chương luận văn hoặc bản thảo; đặt giả thuyết về điểm yếu rồi kiểm chứng từng giả thuyết; đối chiếu checklist báo cáo (JARS-APA, STROBE, COREQ/SRQR, CONSORT); xếp lỗi theo mức nghiêm trọng. Dùng khi người dùng muốn góp ý, phản biện, chấm thử, "bài này đã nộp được chưa".
+description: Tự phản biện nghiêm khắc trước khi nộp. Đóng vai biên tập viên và ba reviewer (phương pháp, lý thuyết, "Reviewer 2" khó tính) để tấn công đề cương, chương luận văn hoặc bản thảo; đặt giả thuyết về điểm yếu rồi kiểm chứng từng giả thuyết; đối chiếu checklist báo cáo (JARS-APA, STROBE, COREQ/SRQR, CONSORT); tính lại p từ t, F, χ², r bằng script để bắt số liệu không khớp; xếp lỗi theo mức nghiêm trọng. Dùng khi người dùng muốn góp ý, phản biện, chấm thử, "bài này đã nộp được chưa".
 ---
 
 # Tự phản biện
@@ -52,9 +52,35 @@ Chỉ nêu các mục thiếu và một phần. Không dán cả checklist.
 
 Đây là việc máy làm tốt và reviewer người rất hay bắt:
 - Số trong văn bản khớp số trong bảng không? N có nhất quán giữa Tóm tắt, Methods, Results, bảng không?
-- Bậc tự do có khớp N không? p có khớp với thống kê kiểm định không? Với t, F, χ², r, tính lại p từ thống kê và df bằng script nhỏ (ý tưởng giống statcheck).
+- Bậc tự do có khớp N không?
+- p có khớp với thống kê kiểm định không? Việc này có script, xem ngay dưới.
 - Giả thuyết trong Introduction có được trả lời trong Results và Discussion không?
 - Thuật ngữ và tên biến có nhất quán không?
+
+### Tính lại p bằng script
+
+Chạy từ thư mục gốc của đề tài (nơi có thư mục `nckh/`). Script nằm trong thư mục của skill này chứ không nằm trong đề tài, nên phải ghi đủ đường dẫn tới nó:
+
+```bash
+python3 "${CLAUDE_SKILL_DIR}/scripts/kiem_thong_ke.py" nckh/ban-thao/main.tex
+```
+
+Phần đầu của đường dẫn script là thư mục chứa file SKILL.md này. Nếu trong lệnh trên vẫn còn một biến chưa được thay bằng đường dẫn thật, hãy tự thay (cài theo dự án thì là `.claude/skills/nckh-phan-bien`).
+
+Script tìm các thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p = .025`; `F(2, 117) = 4.52`; `χ²(3) = 9.21`; `r(98) = .34`; `z = 2.10`), tính lại p rồi so với p ghi trong bài, có tính sai số làm tròn (ý tưởng của statcheck). Đưa file `.tex` chính thì script tự đi theo `\input`. Nó cũng đọc được một file `.md` hoặc `.txt`. Ở chế độ "một phần", đưa đúng file của phần đó.
+
+| Trạng thái | Nghĩa |
+|---|---|
+| `OK` | p trong bài khớp p tính lại. |
+| `LỆCH` | Không khớp, nhưng kết luận có/không có ý nghĩa ở α = .05 không đổi. |
+| `LỆCH NẶNG` | Không khớp, và kết luận đổi. Xếp vào mục Nghiêm trọng. |
+| `MỘT PHÍA?` | Chỉ khớp nếu là kiểm định một phía. Nếu đúng vậy thì bài phải nói rõ. Cả bài dùng một phía thì chạy lại với `--mot-phia`. |
+| `KHÔNG HỢP LỆ` | Giá trị không thể có: \|r\| > 1, bậc tự do ≤ 0, p > 1. |
+| `KHÔNG CÓ p` | Bài không ghi p ngay sau thống kê này. Không phải lỗi. |
+
+Trước khi đưa một dòng `LỆCH` vào báo cáo, mở đúng vị trí script chỉ ra và đọc lại câu đó. p đã hiệu chỉnh (Holm, FDR), kiểm định một phía, hoặc p của một hệ số khác đứng gần đều là lý do chính đáng.
+
+Giới hạn: script không đọc được số trong bảng, cũng không đọc được thống kê viết theo kiểu khác. Script báo "không tìm thấy thống kê nào" không có nghĩa là số liệu đúng. Những chỗ đó đối chiếu bằng cách mở file trong `nckh/ket-qua/`.
 
 ## Kết quả: `nckh/ban-thao/phan-bien-<ngày>.md`
 

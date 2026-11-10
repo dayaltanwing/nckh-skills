@@ -515,6 +515,8 @@ def main():
     print(f"# {len(ket_qua)} thống kê tìm được trong {len(ban_thao)} file ({a.duong_dan})\n")
     for cb in canh_bao:
         print(f"- Lưu ý: {cb}")
+    if canh_bao:
+        print()
     if not ket_qua:
         print("Không tìm thấy thống kê nào viết kiểu APA, ví dụ `t(48) = 2.31, p = .025`.")
         print("Điều này KHÔNG có nghĩa là số liệu đúng: script không đọc được số trong bảng,")

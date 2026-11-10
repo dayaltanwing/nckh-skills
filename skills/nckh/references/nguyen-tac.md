@@ -32,6 +32,8 @@ Phân tích bằng script R/Python, không bằng thao tác tay. Đặt `set.see
 ## 9. Ghi nhật ký quyết định
 Mỗi quyết định về phương pháp (bỏ biến, đổi mô hình, loại người tham gia, đổi câu hỏi nghiên cứu) được ghi một dòng vào `nckh/nhat-ky.md`: ngày, quyết định, lý do, phương án đã bỏ. Đây là thứ cứu bạn khi reviewer hỏi "tại sao".
 
+Khi một quyết định đưa đề tài sang giai đoạn mới (chốt câu hỏi nghiên cứu, chốt đề cương, bắt đầu phân tích, bắt đầu viết, nhận thư của tạp chí), sửa luôn dòng `Giai đoạn hiện tại` trong `nckh/de-tai.md`. Bảng chuyển giai đoạn nằm trong `du-an.md`, cùng thư mục với file này. `/nckh` dựa vào dòng đó để báo người nghiên cứu đang ở đâu.
+
 ## 10. Tự phản biện trước khi reviewer làm
 Trước khi coi một sản phẩm là xong (đề cương, chương, bản thảo), chạy `nckh-phan-bien` để tấn công chính lập luận của mình: tiền đề, thiết kế, phân tích, diễn giải.
 

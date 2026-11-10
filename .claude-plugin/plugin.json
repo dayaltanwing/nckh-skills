@@ -1,7 +1,7 @@
 {
   "name": "nckh",
   "displayName": "NCKH: Nghiên cứu khoa học",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bộ skill nghiên cứu khoa học xã hội bằng tiếng Việt: tìm và đọc tài liệu, tổng quan, thiết kế nghiên cứu, thang đo, phân tích định lượng/định tính, viết LaTeX cho Prism, kiểm trích dẫn với Crossref, tự phản biện, trả lời reviewer. Bắt đầu bằng /nckh:nckh.",
   "author": {
     "name": "dayaltanwing",

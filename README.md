@@ -4,7 +4,7 @@
 
 Bộ skill cá nhân hoá cho nghiên cứu **khoa học xã hội**. Trao đổi bằng tiếng Việt, viết bài tiếng Anh khi nộp quốc tế. Làm việc cùng **Zotero**, **R/Python** và **OpenAI Prism** (LaTeX).
 
-12 skill · 11 nguyên tắc · 7 playbook · 2 script kiểm chứng
+12 skill · 11 nguyên tắc · 7 playbook · 3 script kiểm chứng
 
 Cài vào một thư mục đề tài (không ảnh hưởng dự án khác):
 
@@ -46,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/dayaltanwing/nckh-skills/main/get.s
 | | `/nckh-dinh-tinh` | Phân tích chủ đề Braun & Clarke, codebook, trường hợp ngược, kiểm câu trích nguyên văn, COREQ |
 | Viết & nộp | `/nckh-viet-bai` | IMRaD bằng LaTeX `apa7` + biblatex cho Prism, chỉ dùng số liệu từ file kết quả |
 | | `/nckh-kiem-trich-dan` | Đối chiếu Crossref, `\cite` ↔ `.bib`, khẳng định ↔ thẻ đọc |
-| | `/nckh-phan-bien` | Biên tập viên + 3 reviewer, checklist JARS/STROBE/COREQ, kiểm số liệu nhất quán |
+| | `/nckh-phan-bien` | Biên tập viên + 3 reviewer, checklist JARS/STROBE/COREQ, tính lại p bằng script để bắt số liệu không khớp |
 | | `/nckh-tra-loi-reviewer` | Tách góp ý, kế hoạch sửa, latexdiff, thư trả lời |
 
 ## Cài vào một dự án
@@ -88,7 +88,7 @@ claude plugin install nckh@nckh-skills --scope project
 
 Ở dạng plugin, tên skill có thêm tiền tố: `/nckh:nckh`, `/nckh:nckh-tim-tai-lieu`…
 
-Cần có: Claude Code, Python 3.9+ (cho 2 script). Cho phân tích: R (khuyến nghị) với các gói trong `skills/nckh-phan-tich/references/r-goi-y.md`, hoặc Python.
+Cần có: Claude Code, Python 3.9+ (cho 3 script, không cần cài thêm gói nào). Cho phân tích: R (khuyến nghị) với các gói trong `skills/nckh-phan-tich/references/r-goi-y.md`, hoặc Python.
 
 ## Bắt đầu
 
@@ -124,6 +124,7 @@ de-tai-cua-ban/
 
 - Claude không thay thế người dịch, hội đồng chuyên gia, hay người nghiên cứu khi diễn giải. Các bước ⛔ trong skill là chỗ bạn quyết định.
 - Script tìm và kiểm dựa vào OpenAlex/Crossref. Sách, luận văn, tạp chí Việt Nam không có DOI cần kiểm tay.
+- Script tính lại p chỉ đọc thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p = .025`). Số trong bảng vẫn phải đối chiếu với file kết quả.
 - Dữ liệu người tham gia: ẩn danh hoá trước khi cho Claude đọc (nguyên tắc 6).
 - Kiểm tra quy định của tạp chí và trường về việc dùng AI, và khai báo theo yêu cầu.
 
@@ -135,3 +136,9 @@ Repo này là bản gốc. Muốn sửa một skill:
 3. Commit và push.
 
 Hoặc nhờ Claude trong thư mục bản clone làm giúp. Các dự án đã cài sẽ nhận bản mới khi chạy lại lệnh cài.
+
+Sửa script thì chạy bộ kiểm thử trước khi push. Nó không gọi mạng và không cần cài thêm gì:
+
+```bash
+python3 -m unittest discover -s tests
+```
