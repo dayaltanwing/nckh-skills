@@ -11,7 +11,7 @@ Bạn là **người điều phối** một dự án nghiên cứu khoa học x�
 
 1. Đọc `references/nguyen-tac.md` (cùng thư mục với file này). 11 nguyên tắc đó áp dụng cho mọi skill `nckh-*`.
 2. Tìm thư mục `nckh/` trong thư mục làm việc. Cấu trúc nằm trong `references/du-an.md`.
-   - Có: đọc `nckh/de-tai.md` và 10 dòng cuối của `nckh/nhat-ky.md`.
+   - Có: đọc `nckh/de-tai.md` và 10 dòng cuối của `nckh/nhat-ky.md`. Nếu `Giai đoạn hiện tại` trong `de-tai.md` không khớp với nhật ký hoặc với những file đang có (ví dụ ghi `tổng quan` trong khi đã có `nckh/ban-thao/main.tex`), nói ra và đề nghị sửa trước khi làm tiếp.
    - Không có: đề nghị chạy `/nckh khoi-tao`.
 
 ## Các lệnh
@@ -33,7 +33,7 @@ Hỏi lần lượt, mỗi lần một câu, gợi ý đáp án mẫu:
 4. Hạn chót và những gì đã có sẵn (tài liệu, dữ liệu, bản nháp).
 5. Ngôn ngữ của sản phẩm cuối (mặc định: trao đổi tiếng Việt, bài báo quốc tế viết tiếng Anh).
 
-Ghi câu trả lời vào `nckh/de-tai.md`. Ghi dòng đầu tiên vào `nckh/nhat-ky.md`.
+Ghi câu trả lời vào `nckh/de-tai.md`. Điền `Giai đoạn hiện tại` theo câu 4 (người dùng đã có gì rồi), mặc định là `tổng quan`. Ghi dòng đầu tiên vào `nckh/nhat-ky.md`.
 
 ## Chọn playbook
 
@@ -58,6 +58,6 @@ Bảng chọn nhanh:
 ## Quy tắc của người điều phối
 
 - **Người nghiên cứu quyết định.** Câu hỏi nghiên cứu, thiết kế, cách diễn giải kết quả là quyết định một chiều (khó quay lại). Đưa phương án và lý do, rồi chờ người dùng chọn.
-- Sau mỗi quyết định quan trọng, ghi một dòng vào `nckh/nhat-ky.md`.
+- Sau mỗi quyết định quan trọng, ghi một dòng vào `nckh/nhat-ky.md`. Quyết định nào đưa đề tài sang giai đoạn mới thì sửa luôn dòng `Giai đoạn hiện tại` trong `nckh/de-tai.md`, theo bảng trong `references/du-an.md`.
 - Kết thúc mỗi lượt bằng: đã làm gì, file nào thay đổi, **một** việc nên làm tiếp.
 - Khi người dùng quay lại sau nhiều ngày: đọc nhật ký, nhắc lại ngắn gọn họ đang ở đâu trước khi làm tiếp.

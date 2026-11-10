@@ -23,13 +23,21 @@ Chuỗi = các từ trong một cột nối bằng `OR`, các cột nối với 
 
 ## 2. Tìm
 
-**OpenAlex** (miễn phí, phủ rộng, có tóm tắt). Dùng script đi kèm:
+**OpenAlex** (miễn phí, phủ rộng, có tóm tắt). Dùng script đi kèm. Chạy từ thư mục gốc của đề tài (nơi có thư mục `nckh/`). Script nằm trong thư mục của skill này chứ không nằm trong đề tài, nên phải ghi đủ đường dẫn tới nó:
 
 ```bash
-python3 scripts/tim_openalex.py "career decision AND adolescents AND Vietnam" --tu-nam 2015 --so-luong 50 --bib nckh/tai-lieu/ung-vien.bib
+python3 "${CLAUDE_SKILL_DIR}/scripts/tim_openalex.py" "career decision AND adolescents AND Vietnam" --tu-nam 2015 --so-luong 50 --bib nckh/tai-lieu/ung-vien.bib
 ```
 
+Phần đầu của đường dẫn script là thư mục chứa file SKILL.md này. Nếu trong lệnh trên vẫn còn một biến chưa được thay bằng đường dẫn thật, hãy tự thay (cài theo dự án thì là `.claude/skills/nckh-tim-tai-lieu`).
+
 Script in bảng (tác giả, năm, tiêu đề, tạp chí, số trích dẫn, DOI, link truy cập mở) và tuỳ chọn xuất BibTeX lấy từ doi.org. Chạy `--help` để xem đủ tuỳ chọn (lọc theo loại bài, sắp xếp theo trích dẫn).
+
+- `--bib` ghi thêm vào file chứ không ghi đè: bài đã có trong file (trùng DOI) được bỏ qua, khoá trùng được đổi tên. Vì thế nhiều lần tìm dồn được vào cùng một `ung-vien.bib`.
+- `--so-luong` trên 100 thì script tự lật trang, vì OpenAlex trả 100 bài mỗi trang và chỉ cho lật tới bài thứ 10.000. Cần nhiều hơn nữa thì chia theo khoảng năm (`--tu-nam`, `--den-nam`), chạy nhiều lần, và ghi log từng lần.
+- Không cần khoá API. Nhưng OpenAlex tính hạn mức theo ngày: không có khoá thì được khoảng 100 lượt tìm, có khoá miễn phí thì khoảng 1.000 (mỗi trang 100 bài là một lượt; số liệu theo bảng giá của OpenAlex tháng 11/2026). Khoá lấy tại openalex.org/settings/api. Người dùng tự đặt khoá vào biến môi trường `OPENALEX_API_KEY` trên máy họ; không bảo họ dán khoá vào khung chat.
+- Script báo "OpenAlex từ chối yêu cầu": làm theo gợi ý nó in ra.
+- Script báo lỗi mạng: nói thẳng với người dùng là lần tìm này chưa chạy được. Không thay bằng danh sách bài từ trí nhớ.
 
 **Nguồn người dùng tự tìm** (cần đăng nhập hoặc chặn bot). Đưa họ chuỗi tìm đã chuyển sang cú pháp từng nơi:
 - Scopus: `TITLE-ABS-KEY(...)`
@@ -58,7 +66,9 @@ Không có log thì không vẽ được sơ đồ PRISMA và không trả lời
 
 ## 5. Đưa vào Zotero
 
-Gộp BibTeX đã duyệt vào `nckh/tai-lieu/tai-lieu.bib`. Hướng dẫn người dùng: Zotero → File → Import → chọn file `.bib`. Nếu họ dùng Better BibTeX, khoá trích dẫn sẽ được giữ nguyên.
+Gộp BibTeX đã duyệt vào `nckh/tai-lieu/tai-lieu.bib`. Trước khi gộp, so từng mục mới với file đó: cùng một bài (trùng DOI) thì không thêm lần hai; khác bài mà trùng khoá thì đổi khoá của mục mới (thêm a, b…). Hai mục cùng khoá làm `\cite` trỏ nhầm bài, và `nckh-kiem-trich-dan` sẽ báo đó là lỗi.
+
+Hướng dẫn người dùng: Zotero → File → Import → chọn file `.bib`. Nếu họ dùng Better BibTeX, khoá trích dẫn sẽ được giữ nguyên.
 
 Chiều ngược lại: người dùng export collection từ Zotero ra `.bib` (Better BibTeX, có auto-export) vào `nckh/tai-lieu/tai-lieu.bib` để các skill khác dùng.
 

@@ -42,6 +42,23 @@ nckh/
 …
 ```
 
+## `Giai đoạn hiện tại`: khi nào đổi
+
+`/nckh` đọc dòng này để báo người dùng đang ở đâu và nên làm gì tiếp, nên nó phải đúng với thực tế. Skill nào đưa đề tài sang giai đoạn mới thì skill đó sửa dòng này và ghi một dòng vào nhật ký.
+
+| Việc vừa xảy ra | Giai đoạn mới |
+|---|---|
+| Khởi tạo đề tài | theo những gì người dùng đã có; mặc định `tổng quan` |
+| Chốt câu hỏi nghiên cứu, bắt đầu thiết kế | `thiết kế` |
+| Chốt đề cương và công cụ đo | `thu dữ liệu` |
+| Bắt đầu làm sạch hoặc mã hoá dữ liệu đã thu | `phân tích` |
+| Người dùng duyệt kết quả phân tích, bắt đầu viết bản thảo | `viết` |
+| Nhận thư quyết định của tạp chí | `phản hồi reviewer` |
+
+- Chỉ đổi khi đề tài thật sự sang bước mới. Gọi lẻ một skill của giai đoạn khác (đọc thêm một bài trong lúc đang viết) không làm đổi giai đoạn.
+- Không lùi giai đoạn, trừ khi người dùng nói (ví dụ quay lại thu thêm dữ liệu).
+- Đề tài không có bước nào đó (bài tổng quan không thu dữ liệu) thì bỏ qua bước đó.
+
 ## Mẫu `nhat-ky.md`
 
 ```markdown
