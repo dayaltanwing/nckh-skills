@@ -172,6 +172,15 @@ class LoiMang(CoSo):
         ma, out, err = self.loi(urllib.error.HTTPError("u", 429, "Too Many Requests", {}, None))
         self.assertIn("quá nhiều", ma)
 
+    def test_dut_ket_noi_giua_chung_la_loi_mang_chu_khong_phai_loi_ghi_file(self):
+        import socket
+        for loi in (socket.timeout("timed out"), ConnectionResetError("reset by peer")):
+            ma, out, err = self.loi(loi)
+            self.assertIn("Lỗi mạng", ma)
+            self.assertNotIn("Không ghi được", str(ma) + err)
+        ma, out, err = self.loi(json.JSONDecodeError("Expecting value", "<html>", 0))
+        self.assertIn("không phải JSON", ma)
+
     def test_mat_mang(self):
         ma, out, err = self.loi(urllib.error.URLError("Tunnel connection failed: 403 Forbidden"))
         self.assertIn("Lỗi mạng", ma)
@@ -246,6 +255,29 @@ class GhiBib(CoSo):
         self.assertIn("- 10.1/hong:", out)
         self.assertIn("- 10.1/html:", out)
         self.assertNotIn("hong", self.doc())      # file .bib không bị chèn dòng báo lỗi
+
+    def test_thu_muc_chua_co_thi_tao(self):
+        self.tra_ve([bai(1, "10.1/a")])
+        bib = os.path.join(self.d, "nckh", "tai-lieu", "ung-vien.bib")
+        ma, out, err = self.chay("career", "--bib", bib)
+        self.assertEqual((ma, err), (0, ""))
+        self.assertTrue(os.path.isfile(bib))
+
+    def test_duong_dan_bib_khong_ghi_duoc(self):
+        goi = []
+        self.o.lay_bibtex = lambda doi: goi.append(doi) or bibtex_gia(doi)
+        self.tra_ve([bai(1, "10.1/a")])
+        ma, out, err = self.chay("career", "--bib", self.d)          # đưa nhầm một thư mục
+        self.assertEqual(ma, 2)
+        self.assertIn("Không ghi được", err)
+        self.assertEqual(goi, [])                                       # biết trước khi mất công tải BibTeX
+
+    def test_khong_ghi_duoc_json(self):
+        self.tra_ve([bai(1, "10.1/a")])
+        ma, out, err = self.chay("career", "--json", os.path.join(self.d, "khong-co", "kq.json"))
+        self.assertEqual(ma, 2)
+        self.assertIn("Không ghi được", err)
+        self.assertIn("| 1 |", out)
 
     def test_khong_co_gi_de_ghi_thi_khong_tao_file(self):
         self.tra_ve([bai(1)])

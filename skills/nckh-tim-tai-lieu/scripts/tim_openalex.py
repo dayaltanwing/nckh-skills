@@ -15,6 +15,7 @@ Nếu OpenAlex đòi khoá API, đặt khoá vào biến môi trường OPENALEX
 Script không bao giờ in khoá ra.
 """
 import argparse
+import http.client
 import json
 import os
 import re
@@ -167,6 +168,13 @@ def dat_khoa_rieng(muc, da_dung):
 
 def ghi_bib(bai, duong):
     """Ghi thêm BibTeX của các bài có DOI vào file. Trả về (số bài mới, số đã có, [(doi, lý do không lấy được)])."""
+    # Thử mở file để ghi trước khi tải: đường dẫn sai thì biết ngay, không mất công tải rồi mới hỏng.
+    os.makedirs(os.path.dirname(os.path.abspath(duong)), exist_ok=True)
+    da_co_file = os.path.exists(duong)
+    with open(duong, "a", encoding="utf-8"):
+        pass
+    if not da_co_file:
+        os.remove(duong)                # chỉ thử thôi; không để lại file rỗng nếu rốt cuộc không có gì để ghi
     doi_co, khoa_co, van_ban = doc_bib_da_co(duong)
     moi, da_co, hong = [], 0, []
     for b in bai:
@@ -238,12 +246,18 @@ def main():
             print(f"|   | _{o_bang(b['tom_tat'][:300])}…_ |||||||")
 
     if a.json:
-        with open(a.json, "w", encoding="utf-8") as f:
-            json.dump(bai, f, ensure_ascii=False, indent=2)
+        try:
+            with open(a.json, "w", encoding="utf-8") as f:
+                json.dump(bai, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            khong_ghi_duoc(a.json, e)
         print(f"\nĐã ghi {len(bai)} bài vào {a.json}")
 
     if a.bib:
-        moi, da_co, hong = ghi_bib(bai, a.bib)
+        try:
+            moi, da_co, hong = ghi_bib(bai, a.bib)
+        except OSError as e:            # lỗi mạng khi tải từng BibTeX đã được ghi nhận riêng trong ghi_bib
+            khong_ghi_duoc(a.bib, e)
         khong_doi = sum(1 for b in bai if not b["doi"])
         print(f"\nĐã ghi thêm BibTeX của {moi} bài vào {a.bib} "
               f"(bỏ qua: {da_co} bài đã có trong file, {khong_doi} bài không có DOI).")
@@ -251,6 +265,11 @@ def main():
             print(f"KHÔNG lấy được BibTeX của {len(hong)} bài; các bài này CHƯA có trong file:")
             for doi, ly_do in hong:
                 print(f"- {doi}: {ly_do}")
+
+
+def khong_ghi_duoc(duong, loi):
+    print(f"Không ghi được {duong}: {loi}", file=sys.stderr)
+    sys.exit(2)
 
 
 def chay():
@@ -267,6 +286,10 @@ def chay():
         sys.exit(f"OpenAlex từ chối yêu cầu: HTTP {e.code} {e.reason}.{goi_y}")
     except urllib.error.URLError as e:
         sys.exit(f"Lỗi mạng khi gọi OpenAlex: {e.reason}")
+    except json.JSONDecodeError:
+        sys.exit("OpenAlex trả về nội dung không phải JSON (có thể một proxy đã chặn yêu cầu).")
+    except (OSError, http.client.HTTPException) as e:     # mất kết nối giữa chừng, hết thời gian chờ
+        sys.exit(f"Lỗi mạng khi gọi OpenAlex: {e}")
 
 
 if __name__ == "__main__":

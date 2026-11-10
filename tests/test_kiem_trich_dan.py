@@ -80,6 +80,14 @@ class TacGiaDau(CoSo):
         kq = self.kiem(muc_bib(author="Nguyen, V. A."), ban_ghi("An", "Nguyễn Văn"))
         self.assertTrangThai(kq, "OK")
 
+    def test_hai_ben_viet_tat_o_hai_dau_khac_nhau(self):
+        # .bib chép từ một danh mục đã đảo tên (An, N. V.); Crossref ghi đúng họ nhưng viết tắt tên (Nguyen, V. A.).
+        self.assertTrangThai(self.kiem(muc_bib(author="An, N. V."), ban_ghi("Nguyen", "V. A.")), "OK")
+        self.assertTrangThai(self.kiem(muc_bib(author="Binh, T. T."), ban_ghi("Trần", "T. B.")), "OK")
+        # Tên chỉ có hai từ thì không đủ để dựa vào chữ cái đầu.
+        self.assertTrangThai(self.kiem(muc_bib(author="Smith, J."), ban_ghi("Jones", "S.")), "LỆCH")
+        self.assertTrangThai(self.kiem(muc_bib(author="An, N. V."), ban_ghi("Lê", "V. C.")), "LỆCH")
+
     def test_crossref_ghi_ca_ten_vao_o_ho(self):
         kq = self.kiem(muc_bib(author="Nguyễn Văn An"), {**ban_ghi(), "author": [{"family": "Nguyen Van An"}]})
         self.assertTrangThai(kq, "OK")
@@ -282,6 +290,37 @@ class DocBib(CoSo):
         self.assertEqual(muc[0]["doi"], "10.1191/1478088706qp063oa")
 
 
+    def test_dinh_dang_cua_zotero_va_doi_org(self):
+        zotero = """
+@article{braun_using_2006,
+\ttitle = {Using thematic analysis in psychology},
+\tvolume = {3},
+\turl = {https://doi.org/10.1191/1478088706qp063oa},
+\tdoi = {10.1191/1478088706qp063oa},
+\tabstract = {Thematic analysis is "poorly demarcated", with a = b signs, {nested {braces}} and
+\ta second line.},
+\tauthor = {Braun, Virginia and Clarke, Victoria},
+\tmonth = jan,
+\tyear = {2006},
+\tkeywords = {a = b, c},
+\tpages = {77--101}
+}
+"""
+        doi_org = (" @article{Braun_2006, title={Using thematic analysis in psychology}, volume={3}, "
+                   "url={http://dx.doi.org/10.1191/1478088706qp063oa}, DOI={10.1191/1478088706qp063oa}, number={2}, "
+                   "author={Braun, Virginia and Clarke, Victoria}, year={2006}, month=jan, pages={77–101} }")
+        for nguon in (zotero, doi_org):
+            muc = self.k.doc_bib(nguon)
+            self.assertEqual(len(muc), 1)
+            m = muc[0]
+            self.assertEqual((m["title"], m["doi"], m["year"], m["month"], m["author"]),
+                             ("Using thematic analysis in psychology", "10.1191/1478088706qp063oa", "2006", "jan",
+                              "Braun, Virginia and Clarke, Victoria"))
+        self.assertEqual(self.k.doc_bib(zotero)[0]["pages"], "77--101")
+        self.assertIn("nested {braces}", self.k.doc_bib(zotero)[0]["abstract"])
+        self.assertEqual(self.k.doc_bib(zotero)[0]["keywords"], "a = b, c")
+
+
 class DongLenh(unittest.TestCase):
     """Chạy script như người dùng chạy, ở chế độ không gọi mạng (--chi-tex)."""
 
@@ -407,6 +446,12 @@ class DongLenh(unittest.TestCase):
         ma, out, err = _nap.chay("kiem_trich_dan", bib, "--chi-tex", env={"PYTHONIOENCODING": "ascii"})
         self.assertEqual((ma, err), (1, ""))
         self.assertIn("Khoá trùng", out)
+
+    def test_khong_ghi_duoc_json(self):
+        ma, out, err = _nap.chay("kiem_trich_dan", self.bib, "--chi-tex", "--json", os.path.join(self.d, "khong-co", "kq.json"))
+        self.assertEqual(ma, 2)
+        self.assertIn("Không ghi được", err)
+        self.assertNotIn("Traceback", err)
 
     def test_khong_doc_duoc_bib(self):
         ma, out, err = _nap.chay("kiem_trich_dan", os.path.join(self.d, "khong-co.bib"))

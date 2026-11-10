@@ -78,6 +78,8 @@ def gamma_tren(a, x):
     """Hàm gamma không hoàn chỉnh trên, chuẩn hoá: Q(a, x)."""
     if x <= 0.0:
         return 1.0
+    if math.isinf(x):
+        return 0.0
     truoc = math.exp(-x + a * math.log(x) - math.lgamma(a))
     if x < a + 1.0:                                # chuỗi cho P(a, x), rồi Q = 1 − P
         ap, so_hang, tong = a, 1.0 / a, 1.0 / a
@@ -553,8 +555,12 @@ def main():
         print("\nScript chỉ đọc thống kê viết trong câu. Số trong bảng phải đối chiếu với file kết quả.")
 
     if a.json:
-        with open(a.json, "w", encoding="utf-8") as f:
-            json.dump({"thong_ke": ket_qua, "canh_bao": canh_bao}, f, ensure_ascii=False, indent=2)
+        try:
+            with open(a.json, "w", encoding="utf-8") as f:
+                json.dump({"thong_ke": ket_qua, "canh_bao": canh_bao}, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            print(f"Không ghi được {a.json}: {e}", file=sys.stderr)
+            sys.exit(2)
 
     sys.exit(1 if any(k["trang_thai"] in TRANG_THAI_LOI for k in ket_qua) else 0)
 

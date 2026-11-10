@@ -227,7 +227,11 @@ def khop_tac_gia(ho_bib, ca_bib, ho_cr, ca_cr):
         return True
     if not all(t.isascii() for t in ho_bib + ho_cr):
         return True
-    return set(ho_cr) <= set(ca_bib) or set(ho_bib) <= set(ca_cr)
+    if set(ho_cr) <= set(ca_bib) or set(ho_bib) <= set(ca_cr):
+        return True
+    # Hai bên viết tắt ở hai đầu khác nhau ("An, N. V." và "Nguyen, V. A."): không còn từ nào chung để so,
+    # nên so chữ cái đầu của cả tên. Chỉ tin khi tên có từ ba từ trở lên, để hai người khác nhau khó trùng.
+    return len(ca_bib) >= 3 and sorted(t[0] for t in ca_bib) == sorted(t[0] for t in ca_cr)
 
 
 def so_tieu_de(tieu_de_bib, msg):
@@ -610,9 +614,13 @@ def main():
         print(f"\n{chua_kiem} mục CHƯA ĐƯỢC KIỂM với Crossref vì lỗi mạng. Không coi các mục đó là đạt; chạy lại khi có mạng.")
 
     if a.json:
-        with open(a.json, "w", encoding="utf-8") as f:
-            json.dump({"muc": ket_qua, "khoa_trung": trung, "thieu_trong_bib": thieu, "khong_duoc_trich": thua,
-                       "canh_bao": canh_bao}, f, ensure_ascii=False, indent=2)
+        try:
+            with open(a.json, "w", encoding="utf-8") as f:
+                json.dump({"muc": ket_qua, "khoa_trung": trung, "thieu_trong_bib": thieu, "khong_duoc_trich": thua,
+                           "canh_bao": canh_bao}, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            print(f"Không ghi được {a.json}: {e}", file=sys.stderr)
+            sys.exit(2)
 
     loi = sum(n for tt, n in dem.items() if tt in TRANG_THAI_LOI)
     sys.exit(1 if loi or trung or thieu else 0)

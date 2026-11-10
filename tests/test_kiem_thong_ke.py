@@ -448,6 +448,14 @@ class DongLenh(unittest.TestCase):
         ma, out, err = _nap.chay("kiem_thong_ke", _nap.ghi(self.d, "a.tex", "x"), "--alpha", "5")
         self.assertEqual(ma, 2)
 
+    def test_khong_ghi_duoc_json(self):
+        tex = _nap.ghi(self.d, "bt/main.tex", "$t(48) = 2.31$, $p = .025$\n")
+        ma, out, err = _nap.chay("kiem_thong_ke", tex, "--json", os.path.join(self.d, "khong-co", "kq.json"))
+        self.assertEqual(ma, 2)
+        self.assertIn("Không ghi được", err)
+        self.assertNotIn("Traceback", err)
+        self.assertIn("| OK |", out)             # kết quả vẫn được in ra
+
     def test_in_duoc_tieng_viet_khi_bang_ma_khong_phai_utf8(self):
         tex = _nap.ghi(self.d, "bt/main.tex", "$\\chi^2(3) = 9.21$, $p = .5$\n")
         ma, out, kq = self.chay(tex, env={"PYTHONIOENCODING": "ascii"})
