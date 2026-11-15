@@ -405,6 +405,15 @@ class DongLenh(unittest.TestCase):
         ma, out, kq = self.chay(tex)
         self.assertEqual([x["vi_tri"] for x in kq["thong_ke"]], ["sections/03-results.tex:2"])
 
+    def test_file_nam_canh_ma_khong_duoc_input(self):
+        tex = _nap.ghi(self.d, "bt/main.tex", "\\input{sections/03-results}\n")
+        _nap.ghi(self.d, "bt/sections/03-results.tex", "$t(48) = 2.31$, $p = .025$\n")
+        _nap.ghi(self.d, "bt/sections/05-conclusion.tex", "$t(48) = 1.50$, $p = .03$\n")
+        ma, out, kq = self.chay(tex)
+        self.assertEqual([x["trang_thai"] for x in kq["thong_ke"]], ["OK"])
+        self.assertIn("sections/05-conclusion.tex", " ".join(kq["canh_bao"]))
+        self.assertIn("KHÔNG được kiểm", out)
+
     def test_thu_muc_bo_qua_ban_vong_truoc(self):
         _nap.ghi(self.d, "bt/main.tex", "$t(48) = 2.31$, $p = .025$\n")
         _nap.ghi(self.d, "bt/vong-1/main.tex", "$t(48) = 1.50$, $p = .03$\n")

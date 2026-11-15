@@ -237,7 +237,29 @@ def doc_ban_thao(duong_dan):
                     canh_bao.append(f"không tìm thấy file được \\input: {con} (tại {ten}:{so}); phần đó chưa được kiểm")
 
     them(duong_dan, None)
+    if len(ket_qua) > 1:
+        canh_bao += file_bi_sot(goc, da_xem)
     return ket_qua, canh_bao
+
+
+def file_bi_sot(goc, da_xem):
+    """File .tex nằm cùng thư mục với file chính mà file chính không \\input tới.
+
+    Một phần viết ra file riêng nhưng quên \\input thì không vào bản biên dịch và cũng không được kiểm,
+    nên phải nói ra. Chỉ xét khi file chính có \\input: đưa riêng một phần thì các file bên cạnh không phải là sót.
+    """
+    sot = []
+    for thu_muc, con, ds in os.walk(goc):
+        con[:] = sorted(t for t in con if not t.startswith(("vong-", ".")))
+        for f in sorted(ds):
+            duong = os.path.join(thu_muc, f)
+            if f.endswith(".tex") and not f.endswith("-diff.tex") and os.path.realpath(duong) not in da_xem:
+                sot.append(os.path.relpath(duong, goc))
+    if not sot:
+        return []
+    them = f" và {len(sot) - 8} file khác" if len(sot) > 8 else ""
+    return [f"{len(sot)} file .tex nằm cạnh file chính nhưng không được \\input, nên KHÔNG được kiểm "
+            f"và không có trong bản biên dịch: {', '.join(sot[:8])}{them}"]
 
 
 # ---------- đưa LaTeX / Markdown về văn bản thường ----------

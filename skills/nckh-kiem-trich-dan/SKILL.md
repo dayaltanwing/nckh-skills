@@ -21,7 +21,7 @@ Script làm các việc sau:
 - Báo khoá bị trùng trong `.bib`. Hai mục cùng khoá thì `\cite` có thể trỏ nhầm bài.
 - Với mục có DOI: hỏi Crossref; so tiêu đề (độ giống), năm, tác giả đầu; kiểm tra có thông báo rút bài/đính chính không.
 - Với mục không có DOI: tìm trên Crossref theo tiêu đề và tác giả, đề xuất DOI nếu tìm được bản khớp cao.
-- Với `--tex`: liệt kê khoá được `\cite` nhưng không có trong `.bib` (lỗi), và khoá có trong `.bib` nhưng không được trích (dọn dẹp). Đưa file `.tex` chính thì script tự đi theo `\input` và `\include`. Đưa một thư mục thì nó đọc mọi `.tex` trong đó, trừ `vong-*/` và `*-diff.tex` (bản vòng trước và bản latexdiff do `nckh-tra-loi-reviewer` tạo ra). Chưa có `main.tex` thì đưa file đang viết, ví dụ `nckh/ban-thao/tong-quan.tex`.
+- Với `--tex`: liệt kê khoá được `\cite` nhưng không có trong `.bib` (lỗi), và khoá có trong `.bib` nhưng không được trích (dọn dẹp). Đưa file `.tex` chính thì script tự đi theo `\input` và `\include`. Đưa một thư mục thì nó đọc mọi `.tex` trong đó, trừ `vong-*/` và `*-diff.tex` (bản vòng trước và bản latexdiff do `nckh-tra-loi-reviewer` tạo ra). Chưa có `main.tex` thì đưa file đang viết, ví dụ `nckh/ban-thao/tong-quan.tex`. Script báo "không được \input" nghĩa là có file `.tex` nằm cạnh mà file chính không gọi tới: phần đó chưa được kiểm và cũng không có trong bản biên dịch. Hỏi người dùng nó có thuộc bản thảo không; nếu có thì thêm `\input` rồi chạy lại.
 
 Bản thảo biên dịch với `nckh/ban-thao/refs.bib`, là bản sao của `tai-lieu.bib`. Nếu hai file khác nhau thì script báo đủ khoá mà lúc biên dịch vẫn thiếu. Trước khi chạy, so hai file; khác nhau thì nói với người dùng và hỏi giữ bản nào, rồi mới kiểm.
 

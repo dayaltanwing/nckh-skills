@@ -38,7 +38,7 @@ Chỗ ghi "Giai đoạn → …" là lúc sửa dòng `Giai đoạn hiện tại
 
 ## E. Viết bản thảo để nộp
 1. ⛔ Chốt tạp chí mục tiêu. Đọc hướng dẫn tác giả (số từ, cấu trúc, kiểu trích dẫn).
-2. `nckh-viet-bai`, theo thứ tự: Methods → Results → Discussion → Introduction → Abstract → Title. Giai đoạn → `viết`.
+2. `nckh-viet-bai`, theo thứ tự: Methods → Results (hoặc Findings) → Discussion, kể cả đoạn kết luận → Introduction → Abstract → Title. Giai đoạn → `viết`.
 3. `nckh-kiem-trich-dan`.
 4. `nckh-phan-bien` (chế độ bản thảo).
 5. Sửa theo phản biện, rồi chạy lại bước 3.

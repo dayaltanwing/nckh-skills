@@ -21,25 +21,36 @@ description: Viết bản thảo khoa học xã hội (bài báo IMRaD, chương
    - file trong `ket-qua/`
    - nhật ký (cho Methods)
 
+## Chọn cấu trúc
+
+| Sản phẩm | Cấu trúc |
+|---|---|
+| Bài báo định lượng | IMRaD: Introduction → Methods → Results → Discussion |
+| Bài báo định tính | Introduction → Methods → Findings → Discussion. Methods và Findings viết theo mục định tính trong file tham chiếu. |
+| Bài hỗn hợp | IMRaD; Results chia theo từng nhánh, rồi một mục tích hợp hai nhánh. |
+| Luận văn | Theo mẫu của trường (hỏi người dùng). Thường là: mở đầu, tổng quan, phương pháp, kết quả, bàn luận, kết luận và kiến nghị. Chương tổng quan lấy từ `nckh-tong-quan`; các chương còn lại viết như phần tương ứng của bài báo. |
+
+Tạp chí hoặc trường yêu cầu cấu trúc khác thì theo yêu cầu đó, và ghi vào `yeu-cau-tap-chi.md`.
+
+Kết luận mặc định là **đoạn cuối của Discussion**, không phải một phần riêng. Chỉ tách ra khi tạp chí hoặc trường yêu cầu.
+
 ## Thứ tự viết
 
-Methods → Results → Discussion → Introduction → Conclusion → Abstract → Title.
+Methods → Results (hoặc Findings) → Discussion, kể cả đoạn kết luận → Introduction → Abstract → Title.
 
-Viết phần chắc chắn nhất trước. Introduction được viết sau khi đã biết mình tìm ra gì, để phễu lập luận dẫn đúng tới kết quả.
+Viết phần chắc chắn nhất trước. Introduction được viết sau khi đã biết mình tìm ra gì, để phễu lập luận dẫn đúng tới kết quả. Thứ tự trình bày trong bài thì vẫn theo bảng trên.
 
 ## Từng phần
 
-- **Methods**: đủ chi tiết để người khác làm lại. Gồm: người tham gia và chọn mẫu, quy trình thu dữ liệu, đạo đức (số phê duyệt), công cụ đo (nguồn, quy trình thích ứng, α/ω **trong mẫu này**), phân tích (phần mềm và phiên bản, lấy từ `ket-qua/phien-ban.txt`), xử lý thiếu, pre-registration nếu có. Ghi rõ phân tích nào là khám phá. Có câu về vai trò của AI nếu tạp chí yêu cầu.
-- **Results**: chỉ báo cáo, không diễn giải. Theo thứ tự giả thuyết. Số liệu lấy từ `ket-qua/`, không gõ lại từ trí nhớ. Bảng nhập bằng `\input{../ket-qua/bang3-hoi-quy.tex}` hoặc chép từ file.
-- **Discussion**:
-  - Tóm tắt phát hiện chính, một đoạn.
-  - So sánh với nghiên cứu trước (lấy từ thẻ đọc): giống ở đâu, khác ở đâu, giải thích khả dĩ, đặc biệt yếu tố bối cảnh Việt Nam.
-  - Hàm ý lý thuyết.
-  - Hàm ý thực tiễn: với tư vấn hướng nghiệp, nhà trường, chính sách. Cụ thể, khả thi.
-  - Hạn chế: trung thực, kèm hướng khắc phục.
-  - Hướng nghiên cứu tiếp.
+Trước khi viết một phần, đọc mục của phần đó trong `references/tung-phan.md`. File ấy có khung từng đoạn và các lỗi hay gặp. Tóm tắt:
+
+- **Methods**: đủ chi tiết để người khác làm lại. Phiên bản phần mềm lấy từ `ket-qua/phien-ban.txt`. Ghi rõ phân tích nào là khám phá. Bài định tính luôn ghi vai trò của AI trong mã hoá; bài khác thì ghi khi tạp chí yêu cầu.
+- **Results**: chỉ báo cáo, không diễn giải, theo đúng thứ tự mục tiêu. Số liệu lấy từ `ket-qua/`, không gõ lại từ trí nhớ. Bảng nhập bằng `\input{../ket-qua/bang3-hoi-quy.tex}` hoặc chép từ file.
+- **Findings** (định tính): theo chủ đề, phân tích đi cùng câu trích. Vật liệu lấy từ `ket-qua/dinh-tinh/`.
+- **Discussion**: tóm lược → so với nghiên cứu trước → giải thích → khái quát hoá và hàm ý (lý thuyết; thực tiễn cho tư vấn hướng nghiệp, nhà trường, chính sách) → điểm mạnh và hạn chế → đoạn kết luận. Chú ý yếu tố bối cảnh Việt Nam khi so sánh.
 - **Introduction**: phễu từ `nckh-tong-quan`. Kết thúc bằng mục tiêu, câu hỏi, giả thuyết.
-- **Abstract**: theo cấu trúc tạp chí. Có con số chính. Không có trích dẫn.
+- **Abstract**: theo cấu trúc tạp chí. Có con số chính, trùng với Results. Không có trích dẫn.
+- **Title**: không quá 20 từ; nêu hiện tượng, đối tượng, thiết kế; không viết tắt.
 
 ## LaTeX cho Prism
 
@@ -47,7 +58,8 @@ Cấu trúc `nckh/ban-thao/`:
 
 ```
 main.tex           # khung, \input từng phần
-sections/01-introduction.tex … 06-conclusion.tex
+sections/01-introduction.tex, 02-method.tex, 03-results.tex, 04-discussion.tex
+                   # bài định tính: 03-findings.tex; kết luận tách riêng (khi được yêu cầu): 05-conclusion.tex
 refs.bib           # bản sao tai-lieu.bib (chỉ đồng bộ, không sửa tay)
 figures/           # PDF hình từ ket-qua/
 ```
@@ -76,6 +88,8 @@ Khung `main.tex` (APA 7, chạy được trên Prism vì dùng gói chuẩn):
 \printbibliography
 \end{document}
 ```
+
+Mọi file trong `sections/` phải được `\input` trong `main.tex`. File không được `\input` thì không vào bản biên dịch, và `nckh-kiem-trich-dan` lẫn `nckh-phan-bien` cũng không kiểm nó (hai script sẽ báo "không được \input"). Thêm, đổi tên hay bỏ một phần thì sửa `main.tex` ngay lúc đó.
 
 Nếu tạp chí có template LaTeX riêng (Elsevier, Springer, Taylor & Francis, Frontiers…), dùng template đó thay cho `apa7`.
 

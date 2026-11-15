@@ -405,6 +405,29 @@ class DongLenh(unittest.TestCase):
         self.assertEqual(kq["thieu_trong_bib"], {"thieu1": ["sections/02-method.tex:1"]})
         self.assertEqual(kq["khong_duoc_trich"], ["c2020"])
 
+    def test_file_nam_canh_ma_khong_duoc_input(self):
+        # Khung main.tex chỉ \input bốn phần; phần kết luận viết ra file riêng mà quên \input thì không vào PDF
+        # và không được kiểm. Script phải nói ra, không được im lặng báo sạch.
+        tex = _nap.ghi(self.d, "bt/main.tex", "\\input{sections/01-introduction}\n\\cite{a2020}\\cite{b2020}\\cite{c2020}\n")
+        _nap.ghi(self.d, "bt/sections/01-introduction.tex", "Mở đầu\n")
+        _nap.ghi(self.d, "bt/sections/05-conclusion.tex", "\\cite{bia-hoan-toan}\n")
+        _nap.ghi(self.d, "bt/vong-1/main.tex", "\\cite{cu}\n")
+        _nap.ghi(self.d, "bt/main-diff.tex", "\\cite{cu}\n")
+        ma, out, kq = self.chay(tex)
+        canh_bao = " ".join(kq["canh_bao"])
+        self.assertIn("sections/05-conclusion.tex", canh_bao)
+        self.assertIn("KHÔNG được kiểm", canh_bao)
+        self.assertNotIn("vong-1", canh_bao)               # bản vòng trước và latexdiff vốn không thuộc bản thảo
+        self.assertNotIn("main-diff", canh_bao)
+        self.assertIn("sections/05-conclusion.tex", out)
+
+    def test_dua_mot_phan_thi_khong_canh_bao_cac_phan_khac(self):
+        # Chế độ "một phần": người dùng cố ý đưa đúng một file, các file bên cạnh không phải là sót.
+        _nap.ghi(self.d, "bt/sections/01-introduction.tex", "\\cite{a2020}\n")
+        tex = _nap.ghi(self.d, "bt/sections/03-results.tex", "\\cite{b2020}\\cite{c2020}\n")
+        ma, out, kq = self.chay(tex)
+        self.assertEqual(kq["canh_bao"], [])
+
     def test_input_vong_lap_khong_treo(self):
         tex = _nap.ghi(self.d, "bt/main.tex", "\\input{a}\n\\cite{a2020}\n")
         _nap.ghi(self.d, "bt/a.tex", "\\input{main}\n\\cite{b2020}\n")
