@@ -44,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/dayaltanwing/nckh-skills/main/get.s
 | | `/nckh-cong-cu-do` | Thích ứng thang đo (ITC: dịch xuôi–ngược, CVI, phỏng vấn nhận thức), bảng hỏi, codebook, hướng dẫn phỏng vấn |
 | Phân tích | `/nckh-phan-tich` | Chuỗi script R tái lập được: làm sạch → thang đo (α, ω, CFA) → giả thuyết → độ vững; bảng APA cho LaTeX |
 | | `/nckh-dinh-tinh` | Phân tích chủ đề Braun & Clarke, codebook, trường hợp ngược, kiểm câu trích nguyên văn, COREQ |
-| Viết & nộp | `/nckh-viet-bai` | IMRaD bằng LaTeX `apa7` + biblatex cho Prism, chỉ dùng số liệu từ file kết quả |
+| Viết & nộp | `/nckh-viet-bai` | IMRaD (hoặc cấu trúc định tính, luận văn) bằng LaTeX `apa7` + biblatex cho Prism, có khung từng phần, chỉ dùng số liệu từ file kết quả |
 | | `/nckh-kiem-trich-dan` | Đối chiếu Crossref, `\cite` ↔ `.bib`, khẳng định ↔ thẻ đọc |
 | | `/nckh-phan-bien` | Biên tập viên + 3 reviewer, checklist JARS/STROBE/COREQ, tính lại p bằng script để bắt số liệu không khớp |
 | | `/nckh-tra-loi-reviewer` | Tách góp ý, kế hoạch sửa, latexdiff, thư trả lời |

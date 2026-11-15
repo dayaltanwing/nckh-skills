@@ -67,7 +67,7 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/kiem_thong_ke.py" nckh/ban-thao/main.tex
 
 Phần đầu của đường dẫn script là thư mục chứa file SKILL.md này. Nếu trong lệnh trên vẫn còn một biến chưa được thay bằng đường dẫn thật, hãy tự thay (cài theo dự án thì là `.claude/skills/nckh-phan-bien`).
 
-Script tìm các thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p = .025`; `F(2, 117) = 4.52`; `χ²(3) = 9.21`; `r(98) = .34`; `z = 2.10`), tính lại p rồi so với p ghi trong bài, có tính sai số làm tròn (ý tưởng của statcheck). Đưa file `.tex` chính thì script tự đi theo `\input`. Nó cũng đọc được một file `.md` hoặc `.txt`. Ở chế độ "một phần", đưa đúng file của phần đó.
+Script tìm các thống kê viết trong câu theo kiểu APA (`t(48) = 2.31, p = .025`; `F(2, 117) = 4.52`; `χ²(3) = 9.21`; `r(98) = .34`; `z = 2.10`), tính lại p rồi so với p ghi trong bài, có tính sai số làm tròn (ý tưởng của statcheck). Đưa file `.tex` chính thì script tự đi theo `\input`. Nó cũng đọc được một file `.md` hoặc `.txt`. Ở chế độ "một phần", đưa đúng file của phần đó. Script báo có file "không được \input" thì phần đó chưa được kiểm: xử lý như ở `nckh-kiem-trich-dan`.
 
 | Trạng thái | Nghĩa |
 |---|---|
